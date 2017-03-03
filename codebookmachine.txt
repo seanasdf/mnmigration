@@ -1,0 +1,16 @@
+  Variable               Columns        Len    2015   
+  YEAR               H   1-4            4      X 
+  DATANUM            H   5-6            2      X 
+  SERIAL             H   7-14           8      X 
+  HHWT               H  15-24          10      X 
+  STATEFIP           H  25-26           2      X 
+  COUNTY             H  27-30           4      X 
+  COUNTYFIPS         H  31-33           3      X 
+  CITY               H  34-37           4      X 
+  GQ                 H  38              1      X 
+  PERNUM             P  39-42           4      X 
+  PERWT              P  43-52          10      X 
+  AGE                P  53-55           3      X 
+  MIGPLAC1           P  56-58           3      X 
+
+
