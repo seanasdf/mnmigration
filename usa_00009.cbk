@@ -1,4 +1,4 @@
-Description: Mn residents only
+Description: Previous MN Residents Only
 Samples selected:
       2011-2015, ACS 5-year
             Note: 
@@ -31,7 +31,7 @@ All Years X - available in this sample
 All Years . - not available in this sample
 
 Case Selections:
-H STATEFIP      27 Minnesota
+P MIGPLAC1      027 Minnesota
 
  YEAR		Census year
 1850		1850

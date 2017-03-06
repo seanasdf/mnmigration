@@ -1,4 +1,4 @@
-Description: previous mn residents
+Description: Revision of (Mn residents only) to add PUMA
 Samples selected:
       2011-2015, ACS 5-year
             Note: 
@@ -16,22 +16,24 @@ Case Selection:               Yes
   COUNTY             H  27-30           4      X 
   COUNTYFIPS         H  31-33           3      X 
   CITY               H  34-37           4      X 
-  GQ                 H  38              1      X 
-  PERNUM             P  39-42           4      X 
-  PERWT              P  43-52          10      X 
-  AGE                P  53-55           3      X 
-  MIGRATE1           P  56              1      X 
-  MIGRATE1D          P  57-58           2      X 
-  MIGPLAC1           P  59-61           3      X 
-  MIGPUMA1           P  62-66           5      X 
-  MOVEDIN            P  67              1      X 
+  PUMA               H  38-42           5      X 
+  PUMARES2MIG        H  43-47           5      X 
+  GQ                 H  48              1      X 
+  PERNUM             P  49-52           4      X 
+  PERWT              P  53-62          10      X 
+  AGE                P  63-65           3      X 
+  MIGRATE1           P  66              1      X 
+  MIGRATE1D          P  67-68           2      X 
+  MIGPLAC1           P  69-71           3      X 
+  MIGPUMA1           P  72-76           5      X 
+  MOVEDIN            P  77              1      X 
 
 Variable Availability Key:
 All Years X - available in this sample
 All Years . - not available in this sample
 
 Case Selections:
-P MIGPLAC1      027 Minnesota
+H STATEFIP      27 Minnesota
 
  YEAR		Census year
 1850		1850
