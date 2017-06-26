@@ -3,6 +3,11 @@ library(readr)
 library(purrr)
 library(srvyr)
 
+
+######################################
+######## Run Analysis on Mig #########
+######################################
+
 inmigration <- read_csv("usa_00010.csv.gz") %>%
   mutate(geogroup =ifelse(PUMARES2MIG==14, "Hennepin", 
                           ifelse(PUMARES2MIG==13, "Ramsey", "All Other Counties")),
@@ -15,7 +20,32 @@ inmigration <- read_csv("usa_00010.csv.gz") %>%
   ) %>%
   as_survey_design(weights=PERWT) %>%
   group_by(PUMARES2MIG, agegroup) %>%
-  summarise(moved_in = survey_total(moved))
+  summarise(moved_in = survey_total(moved)) %>%
+  mutate(migpuma=PUMARES2MIG*100)
+
+library(survey)
+outmigration <- read_csv("usa_00009.csv.gz") %>%
+  filter(STATEFIP != 27) %>%
+  mutate(geogroup =ifelse(MIGPUMA1==1400, "Hennepin", 
+                          ifelse(MIGPUMA1==1300, "Ramsey", "All Other Counties")),
+         agegroup = ifelse(AGE<17, "16 and Younger",
+                           ifelse(AGE>=17 & AGE<24, "17 to 23",
+                                  ifelse(AGE>=24 & AGE<31, "24 to 30", "31 and Over")
+                           )
+         ),
+         one=1) 
+
+outmigration_survey <- svydesign(ids = ~1,
+                                  data= alternate_outmigration,
+                                  weights = alternate_outmigration$PERWT)
+
+outmigration <- svyby(~one, ~MIGPUMA1+agegroup, outmigration_survey, svytotal) %>%
+  mutate(migpuma=MIGPUMA1,
+         moved_out=one)
+
+netmig <- left_join(outmigration, inmigration) %>%
+  mutate(net_migration = moved_in-moved_out,
+         id=PUMARES2MIG)
 
 ######################################
 ######### Map Net Migration ##########
@@ -24,7 +54,9 @@ inmigration <- read_csv("usa_00010.csv.gz") %>%
 #load packages to use
 library(rgdal)
 library(ggplot2)
-
+library(broom)
+library(maptools)
+library(rgeos)
 
 #Read in shapefile for MigPumas
 if (!file.exists("shapefile.rda")) {
@@ -35,14 +67,12 @@ if (!file.exists("shapefile.rda")) {
   load("shapefile.rda")
 }
 
-
-
-
-mnmap <- fortify(shapefile)
+mnmap <- tidy(shapefile, region="PWPUMA") %>%
+  mutate(id=as.numeric(id)/100) %>%
+  left_join(filter(netmig, agegroup=="24 to 30"))
 
 ggplot() + 
   geom_polygon(data=mnmap,
-               aes(long, lat, group=group),
-               fill="white",
+               aes(long, lat, group=group, fill=net_migration),
                color="black") +
   coord_equal()
