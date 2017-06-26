@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1498514138321.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "D54666DD",
+    "lastKnownWriteTime" : 7308604914264011873,
+    "last_content_update" : 1498514138321,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "A1C859EC",
+        "caption" : "inmigration",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=inmigration&cache_key=A1C859EC",
+        "displayedObservations" : 104,
+        "environment" : "",
+        "object" : "inmigration",
+        "preview" : 0,
+        "totalObservations" : 104,
+        "variables" : 4
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
