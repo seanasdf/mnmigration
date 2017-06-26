@@ -4,16 +4,6 @@ library(purrr)
 library(srvyr)
 
 ######################################
-#########  SET DIRECTORIES  ##########
-######################################
-
-#Home machine
-setwd("~/Documents/rstuff/mnmigration")
-
-#work mchine
-# setwd("i:/user/williams/data assistance/migration wagenius/")
-
-######################################
 ######### Migration to MN ############
 ######################################
 
