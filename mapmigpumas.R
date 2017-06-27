@@ -8,9 +8,14 @@ library(srvyr)
 ######## Run Analysis on Mig #########
 ######################################
 
-inmigration <- read_csv("usa_00010.csv.gz") %>%
-  mutate(geogroup =ifelse(PUMARES2MIG==14, "Hennepin", 
-                          ifelse(PUMARES2MIG==13, "Ramsey", "All Other Counties")),
+migpumacrosswalk <- read_csv("./crosswalk/mnpumamigpuma11to15.csv") 
+names(migpumacrosswalk)[3] <- "Res_MIGPUMA"
+
+
+inmigration <- read_csv("usa_00011.csv.gz") %>%
+  left_join(migpumacrosswalk, by=c("PUMA"="PUMA", "MULTYEAR"="Year")) %>%
+  mutate(geogroup =ifelse(Res_MIGPUMA==14, "Hennepin", 
+                          ifelse(Res_MIGPUMA==1300, "Ramsey", "All Other Counties")),
          agegroup = ifelse(AGE<17, "16 and Younger",
                            ifelse(AGE>=17 & AGE<24, "17 to 23",
                                   ifelse(AGE>=24 & AGE<31, "24 to 30", "31 and Over")
@@ -19,9 +24,10 @@ inmigration <- read_csv("usa_00010.csv.gz") %>%
          moved = ifelse(!(MIGPLAC1 %in% c(0,27) & MIGPLAC1<100), 1, 0) 
   ) %>%
   as_survey_design(weights=PERWT) %>%
-  group_by(PUMARES2MIG, agegroup) %>%
-  summarise(moved_in = survey_total(moved)) %>%
-  mutate(migpuma=PUMARES2MIG*100)
+  group_by(Res_MIGPUMA, agegroup) %>%
+  summarise(moved_in = survey_total(moved))
+
+names(inmigration)[1] <- "migpuma"
 
 library(survey)
 outmigration <- read_csv("usa_00009.csv.gz") %>%
@@ -36,8 +42,8 @@ outmigration <- read_csv("usa_00009.csv.gz") %>%
          one=1) 
 
 outmigration_survey <- svydesign(ids = ~1,
-                                  data= alternate_outmigration,
-                                  weights = alternate_outmigration$PERWT)
+                                  data= outmigration,
+                                  weights = outmigration$PERWT)
 
 outmigration <- svyby(~one, ~MIGPUMA1+agegroup, outmigration_survey, svytotal) %>%
   mutate(migpuma=MIGPUMA1,
@@ -45,7 +51,7 @@ outmigration <- svyby(~one, ~MIGPUMA1+agegroup, outmigration_survey, svytotal) %
 
 netmig <- left_join(outmigration, inmigration) %>%
   mutate(net_migration = moved_in-moved_out,
-         id=PUMARES2MIG)
+         id=MIGPUMA1)
 
 ######################################
 ######### Map Net Migration ##########
@@ -68,7 +74,7 @@ if (!file.exists("shapefile.rda")) {
 }
 
 mnmap <- tidy(shapefile, region="PWPUMA") %>%
-  mutate(id=as.numeric(id)/100) %>%
+  mutate(id=as.numeric(id)) %>%
   left_join(filter(netmig, agegroup=="24 to 30"))
 
 ggplot() + 
