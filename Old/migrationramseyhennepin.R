@@ -8,62 +8,67 @@ library(srvyr)
 ######################################
 
 #using srvyr
-inmigration <- read_csv("usa_00010.csv.gz") %>%
-      mutate(geogroup =ifelse(PUMARES2MIG==14, "Hennepin", 
-                              ifelse(PUMARES2MIG==13, "Ramsey", "All Other Counties")),
-             agegroup = ifelse(AGE<17, "16 and Younger",
-                               ifelse(AGE>=17 & AGE<24, "17 to 23",
-                                      ifelse(AGE>=24 & AGE<31, "24 to 30", "31 and Over")
-                                      )
-                               ),
-             moved = ifelse(!(MIGPLAC1 %in% c(0,27) & MIGPLAC1<100), 1, 0) 
-             ) %>%
-      as_survey_design(weights=PERWT) %>%
-      group_by(geogroup, agegroup) %>%
-      summarise(moved_in = survey_total(moved))
+# inmigration <- read_csv("usa_00010.csv.gz") %>%
+#   mutate(geogroup =ifelse(PUMARES2MIG==14, "Hennepin",
+#                           ifelse(PUMARES2MIG==13, "Ramsey", "All Other Counties")),
+#          agegroup = ifelse(AGE<17, "16 and Younger",
+#                            ifelse(AGE>=17 & AGE<24, "17 to 23",
+#                                   ifelse(AGE>=24 & AGE<31, "24 to 30", "31 and Over")
+#                            )
+#          ),
+#          moved = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<150, 1, 0)
+#   ) %>%
+#       as_survey_design(weights=PERWT) %>%
+#       group_by(geogroup, agegroup) %>%
+#       summarise(moved_in = survey_total(moved)) 
+
+
 
 
 #Verify that the srvyr match up with the R survey package
 library(survey)
-alternate_inmigration <- read_csv("usa_00010.csv.gz") %>%
+inmigration <- read_csv("usa_00010.csv.gz") %>%
   mutate(geogroup =ifelse(PUMARES2MIG==14, "Hennepin", 
                           ifelse(PUMARES2MIG==13, "Ramsey", "All Other Counties")),
          agegroup = ifelse(AGE<17, "16 and Younger",
                            ifelse(AGE>=17 & AGE<24, "17 to 23",
                                   ifelse(AGE>=24 & AGE<31, "24 to 30", "31 and Over")
-                                  )
-                           ),
-         moved = ifelse(!(MIGPLAC1 %in% c(0,27) & MIGPLAC1<100), 1, 0)
-)
+                           )
+         ),
+         moved = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<150, 1, 0)
+  )
 
-alternate_in_survey <- svydesign(ids = ~1,
-                              data= alternate_inmigration,
-                              weights = alternate_inmigration$PERWT)
+inmigration <- svydesign(ids = ~1,
+                              data= inmigration,
+                              weights = inmigration$PERWT)
 
 
-alternate_in_survey <- svyby(~moved, ~geogroup+agegroup, alternate_in_survey, svytotal)
+inmigration <- svyby(~moved, ~geogroup+agegroup, inmigration, svytotal)
+
+inmigration <- cbind(inmigration, confint(inmigration, level = .9))
+names(inmigration)[c(3:6)] <- c("moved_in","se_in","ci_low_in", "ci_high_in")
 
 
 ######################################
 ######### Migration from MN ##########
 ######################################
 
-outmigration <- read_csv("usa_00009.csv.gz") %>%
-      filter(STATEFIP != 27) %>%
-      mutate(geogroup =ifelse(MIGPUMA1==1400, "Hennepin", 
-                              ifelse(MIGPUMA1==1300, "Ramsey", "All Other Counties")),
-             agegroup = ifelse(AGE<17, "16 and Younger",
-                               ifelse(AGE>=17 & AGE<24, "17 to 23",
-                                      ifelse(AGE>=24 & AGE<31, "24 to 30", "31 and Over")
-                               )
-             )) %>%
-      as_survey_design(weights=PERWT)  %>%
-      group_by(geogroup, agegroup) %>%
-      summarise(moved_out = survey_total())
+# outmigration <- read_csv("usa_00009.csv.gz") %>%
+#       filter(STATEFIP != 27) %>%
+#       mutate(geogroup =ifelse(MIGPUMA1==1400, "Hennepin", 
+#                               ifelse(MIGPUMA1==1300, "Ramsey", "All Other Counties")),
+#              agegroup = ifelse(AGE<17, "16 and Younger",
+#                                ifelse(AGE>=17 & AGE<24, "17 to 23",
+#                                       ifelse(AGE>=24 & AGE<31, "24 to 30", "31 and Over")
+#                                )
+#              )) %>%
+#       as_survey_design(weights=PERWT)  %>%
+#       group_by(geogroup, agegroup) %>%
+#       summarise(moved_out = survey_total())
 
 
 #Verify that the srvyr match up with the R survey package
-alternate_outmigration <- read_csv("usa_00009.csv.gz") %>%
+outmigration <- read_csv("usa_00009.csv.gz") %>%
       filter(STATEFIP != 27) %>%
       mutate(geogroup =ifelse(MIGPUMA1==1400, "Hennepin", 
                               ifelse(MIGPUMA1==1300, "Ramsey", "All Other Counties")),
@@ -74,27 +79,30 @@ alternate_outmigration <- read_csv("usa_00009.csv.gz") %>%
              ),
              one=1) 
 
-alternate_out_survey <- svydesign(ids = ~1,
-                                 data= alternate_outmigration,
-                                 weights = alternate_outmigration$PERWT)
+outmigration <- svydesign(ids = ~1,
+                                 data= outmigration,
+                                 weights = outmigration$PERWT)
 
-alternate_out_survey <- svyby(~one, ~geogroup+agegroup, alternate_out_survey, svytotal)
+outmigration <- svyby(~one, ~geogroup+agegroup, outmigration, svytotal)
+outmigration <- cbind(outmigration, confint(outmigration, level = .9))
+names(outmigration)[c(3:6)] <- c("moved_out","se_out","ci_low_out", "ci_high_out")
 
 ######################################
 ######### Graph Net Migration ########
 ######################################
-netmig <- left_join(inmigration, outmigration) %>%
+netmig <- left_join(inmigration, outmigration, by=c("agegroup","geogroup")) %>%
       mutate(net_migration = moved_in-moved_out )
 write.csv(netmig, "netmigration.csv")
 
 library(tidyr)
 netmig_long <- left_join(inmigration, outmigration) %>%
       gather(direction, mig, moved_in, moved_out) %>%
-      mutate(se = ifelse(direction=="moved_in", moved_in_se, moved_out_se)) %>%
-      select(-moved_in_se, -moved_out_se) %>%
+      mutate(se = ifelse(direction=="moved_in", se_in, se_out),
+             ci_low = ifelse(direction=="moved_in", ci_low_in, ci_low_out),
+             ci_high = ifelse(direction=="moved_in", ci_high_in, ci_high_out)) %>%
+      select(-se_out, -se_in, -ci_low_in, -ci_high_in, -ci_low_out, -ci_high_out) %>%
       mutate(geogroup = factor(geogroup, levels=c("Hennepin","Ramsey", "All Other Counties")),
              direction = factor(direction, levels=c("moved_out", "moved_in")))
-
 
 library(ggplot2)
 barplot17_totals <- filter(netmig_long, agegroup=="17 to 23") %>%
@@ -125,9 +133,11 @@ ggsave("ages17to23_totals.png", barplot17_totals,width=8,height=6)
 barplot17_errorbars <- filter(netmig_long, agegroup=="17 to 23") %>%
   ggplot(aes(x=geogroup, y=mig, fill=direction)) +
   geom_bar(stat="identity", position="dodge") +
-  geom_errorbar(aes(ymin=mig-se, ymax=mig+se), 
+  geom_errorbar(aes(ymin=ci_low, ymax=ci_high), 
                 width = .2,
                 position=position_dodge(.9)) +
+  geom_text(aes(x=geogroup, y=mig, label=scales::comma(mig)),
+            position=position_dodge(width=0.9), vjust=-2.5) +
   theme(
     panel.background = element_blank(),
     axis.ticks.x=element_blank(),
@@ -175,9 +185,11 @@ ggsave("ages24to30_totals.png", barplot24,width=8,height=6)
 barplot24_errorbars <- filter(netmig_long, agegroup=="24 to 30") %>%
   ggplot(aes(x=geogroup, y=mig, fill=direction)) +
   geom_bar(stat="identity", position="dodge") +
-  geom_errorbar(aes(ymin=mig-se, ymax=mig+se), 
+  geom_errorbar(aes(ymin=ci_low, ymax=ci_high), 
                 width = .2,
                 position=position_dodge(.9))+
+  geom_text(aes(x=geogroup, y=mig, label=scales::comma(mig)),
+            position=position_dodge(width=0.9), vjust=-3.5) +
   theme(
     panel.background = element_blank(),
     axis.ticks.x=element_blank(),
