@@ -1,4 +1,4 @@
-Description: Previous MN Residents Only
+Description: Mn Residents of other states
 Samples selected:
       2011-2015, ACS 5-year
             Note: 
@@ -9,22 +9,23 @@ File Type:                    rectangular
 Case Selection:               Yes
   Variable               Columns        Len    2015   
   YEAR               H   1-4            4      X 
-  DATANUM            H   5-6            2      X 
-  SERIAL             H   7-14           8      X 
-  HHWT               H  15-24          10      X 
-  STATEFIP           H  25-26           2      X 
-  COUNTY             H  27-30           4      X 
-  COUNTYFIPS         H  31-33           3      X 
-  CITY               H  34-37           4      X 
-  GQ                 H  38              1      X 
-  PERNUM             P  39-42           4      X 
-  PERWT              P  43-52          10      X 
-  AGE                P  53-55           3      X 
-  MIGRATE1           P  56              1      X 
-  MIGRATE1D          P  57-58           2      X 
-  MIGPLAC1           P  59-61           3      X 
-  MIGPUMA1           P  62-66           5      X 
-  MOVEDIN            P  67              1      X 
+  MULTYEAR           H   5-8            4      X 
+  DATANUM            H   9-10           2      X 
+  SERIAL             H  11-18           8      X 
+  HHWT               H  19-28          10      X 
+  STATEFIP           H  29-30           2      X 
+  COUNTY             H  31-34           4      X 
+  COUNTYFIPS         H  35-37           3      X 
+  CITY               H  38-41           4      X 
+  GQ                 H  42              1      X 
+  PERNUM             P  43-46           4      X 
+  PERWT              P  47-56          10      X 
+  AGE                P  57-59           3      X 
+  MIGRATE1           P  60              1      X 
+  MIGRATE1D          P  61-62           2      X 
+  MIGPLAC1           P  63-65           3      X 
+  MIGPUMA1           P  66-70           5      X 
+  MOVEDIN            P  71              1      X 
 
 Variable Availability Key:
 All Years X - available in this sample
@@ -674,7 +675,7 @@ P MIGPLAC1      027 Minnesota
 3330		Knoxville, TN
 3350		Kokomo, IN
 3370		La Crosse, WI
-3380		Lafayette, IL
+3380		Lafayette, IN
 3390		Lafayette, LA
 3391		La Grange, IL
 3392		La Grange, GA
