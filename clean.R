@@ -1,6 +1,26 @@
-library(tidyr)
+library(tidyverse)
 library(readxl)
 
+
+######################################
+######### Migration within ###########
+######### Minnesota ##################
+######################################
+
+#read in crosswalk for years and PUMAs to Geographic Groupings
+pumacrosswalk <- read_excel("./crosswalk/crosswalk_puma_to_mncounty.xlsx") 
+names(pumacrosswalk)[3] <- "geogroup"
+
+#read in extract from IPUMS and join with crosswalk to geographic groupings
+in_state <- read_csv("usa_00011.csv.gz") %>% 
+  left_join(pumacrosswalk, by=c("PUMA"="PUMA", "MULTYEAR"="Year")) %>% 
+  migpumacrosswalk <- read_excel("./crosswalk/migpumacrosswalk.xlsx",
+                                 sheet = "MigPUMAtoGeogroup") 
+
+  
+  mutate(case_when(
+    
+  ))
 
 ######################################
 ######### Migration to MN   ##########
