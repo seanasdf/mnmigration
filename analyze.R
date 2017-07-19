@@ -80,60 +80,65 @@ pct_netmig <- left_join(inmigration_by_group, outmigration_by_group) %>%
   mutate(geogroup = factor(geogroup, levels=c("Ramsey","Hennepin","Other Metro Counties","Greater Minnesota")),
          direction = factor(direction, levels=c("pct_moved_out", "pct_moved_in")))
 
-
-
+####Create ggplot2 theme for plots####
 library(ggplot2)
+library(showtext)
+
+#add roboto font from google
+font.add.google("Roboto", "roboto")
+
+#create default text
+migration_text <- element_text(family="roboto", 
+                               size=24, 
+                               face="plain", 
+                               color="black",
+                               lineheight = 0.4
+                              )
+#create theme
+theme_migration <-  theme(
+  panel.background = element_blank(),
+  axis.ticks.x=element_blank(),
+  axis.ticks.y=element_blank(),
+  axis.title.x=element_blank(),
+  axis.title.y=migration_text,
+  axis.text.x=migration_text,
+  axis.text.y=migration_text,
+  legend.text=migration_text,
+  plot.caption = migration_text,
+  legend.title=element_blank(),
+  legend.position="bottom",
+  plot.title =migration_text,
+  panel.grid.major.y = element_line(color="#d9d9d9")
+  ) + 
+  theme(plot.title = element_text(size=35, hjust = 0.5))
+
+
+####Actually plot the thing for 18 to 23 year olds####
 netmig18_pct <- filter(pct_netmig, agegroup=="18 to 23") %>%
   ggplot(aes(x=geogroup, y=mig, fill=direction)) +
+  theme_migration +
   geom_bar(stat="identity", position="dodge") +
-  theme(
-    panel.background = element_blank(),
-    axis.ticks.x=element_blank(),
-    axis.ticks.y=element_blank(),
-    axis.title.x=element_blank(),
-    axis.title.y=element_text(size=12, color="black"),
-    axis.text.x=element_text(size=12, color="black"),
-    legend.title=element_blank(),
-    legend.position="bottom",
-    plot.caption=element_text(size=8, hjust=.5),
-    plot.title = element_text(hjust = 0.5),
-    panel.grid.major.y = element_line(color="#d9d9d9")
-  ) +
   scale_y_continuous(labels=scales::percent) +
-  scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), palette="Set2")+
-  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Aged 17 to 23",
-       caption = "Source: MN House Research/MN State Demographer. Error bars represent 90% confidence intervals. 
-       2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
+  scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
+                    palette="Set1")+
+  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Aged 18 to 23",
+       caption = "Source: MN House Research/MN State Demographer.\n Error bars represent 90% confidence intervals. 2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
        y="Percent of Population in Age Group") +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
                 position=position_dodge(.9))
 
-netmig18_pct
+ggsave("netmig18_pct.png", netmig18_pct,width=8,height=6) 
 
-
-
-
-library(ggplot2)
+####Actually plot the thing for 24 to 29 year olds####
 netmig24_pct <- filter(pct_netmig, agegroup=="24 to 29") %>%
   ggplot(aes(x=geogroup, y=mig, fill=direction)) +
   geom_bar(stat="identity", position="dodge") +
-  theme(
-    panel.background = element_blank(),
-    axis.ticks.x=element_blank(),
-    axis.ticks.y=element_blank(),
-    axis.title.x=element_blank(),
-    axis.title.y=element_text(size=12, color="black"),
-    axis.text.x=element_text(size=12, color="black"),
-    legend.title=element_blank(),
-    legend.position="bottom",
-    plot.caption=element_text(size=8, hjust=.5),
-    plot.title = element_text(hjust = 0.5),
-    panel.grid.major.y = element_line(color="#d9d9d9")
-  ) +
+  theme_migration +
   scale_y_continuous(labels=scales::percent) +
-  scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), palette="Set2")+
-  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Aged 17 to 23",
+  scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
+                    palette="Set1")+
+  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Aged 24 to 29",
        caption = "Source: MN House Research/MN State Demographer. Error bars represent 90% confidence intervals. 
        2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
        y="Percent of Population in Age Group") +
@@ -141,7 +146,10 @@ netmig24_pct <- filter(pct_netmig, agegroup=="24 to 29") %>%
                 width = .2,
                 position=position_dodge(.9))
 
-netmig24_pct
+
+ggsave("netmig24_pct.png", netmig24_pct,width=8,height=6) 
+
+
 
 # ######################################
 # ###### Graph Total Migration #########
