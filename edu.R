@@ -86,6 +86,7 @@ educ_migration <- left_join(educ_inmigration, educ_outmigration,
                                       associate_in, associate_out,
                                       bachelors_in, bachelors_out,
                                       advanced_in, advanced_out) %>%
+  mutate(direction=ifelse(grepl("_in", variable), "Inmigration", "Outmigration")) %>% 
   mutate(lowerror = case_when(variable == "missing_edu_in" ~ missing_edu_low_in,
                               variable == "missing_edu_out" ~ missing_edu_low_out,
                               variable == "less_hs_in" ~ less_hs_low_in,
@@ -122,8 +123,7 @@ educ_migration <- left_join(educ_inmigration, educ_outmigration,
                               grepl("missing", variable) ~ "Missing/NA",
                               grepl("some_college", variable) ~ "Some College, No Degree"
          )
-  ) %>% 
-  mutate(direction=ifelse(grepl("_in", variable), "Inmigration", "Outmigration")) %>%
+  ) %>%
   select(-matches("_low_"), -matches("_upp_")) %>% 
   mutate(geogroup = factor(geogroup, levels=c("Ramsey","Hennepin","Other Metro Counties","Greater Minnesota")),
          direction = factor(direction, levels=c("Outmigration","Inmigration")),
@@ -165,70 +165,45 @@ theme_migration <-  theme(
   axis.title.x=element_blank(),
   axis.title.y=migration_text,
   axis.text.x=migration_text,
-  axis.text.y=migration_text,
+  axis.text.y=element_blank(),
   legend.text=migration_text,
   plot.caption = migration_text,
   legend.title=element_blank(),
   legend.position="bottom",
   plot.title =migration_text,
-  panel.grid.major.y = element_line(color="#d9d9d9"),
+  panel.grid.major.y = element_blank(),
   panel.grid.major.x = element_blank()
 ) + 
   theme(plot.title = element_text(size=36, hjust = 0.5),
-        plot.caption = element_text(size=24))
+        plot.caption = element_text(size=24),
+        legend.text=element_text(size=24))
 
 
-educ_18 <- filter(educ_migration, agegroup=="18 to 23")  %>% 
+#Graph education levels for 24 to 29 year olds
+educ_24 <- filter(educ_migration, 
+                  agegroup=="24 to 29" & variable !="Missing/NA")  %>%
+  mutate(direction = ifelse(direction=="Inmigration", "Moved to Minnesota", "Moved from Minnesota")) %>% 
   ggplot(aes(x=direction,
              y=value,
              fill=variable)) +
   theme_migration +
+  theme(strip.text.x = migration_text,
+        strip.background=element_rect(color="white", fill="white")) +
   geom_bar(stat="identity",position="fill") +
-  coord_flip() +
+  #coord_flip() +
+  scale_fill_brewer(palette="Paired") +
+  scale_y_continuous(labels=scales::percent,
+                     trans = "reverse") +
   facet_wrap(~geogroup, ncol=2) +
-  scale_fill_brewer(palette="Set1")
-
-educ_18
-
-ggsave("educ_18.png", educ_18,width=8,height=6) 
-
-
-  scale_fill_brewer(labels=c("Left for Another State", 
-                             "Moved to Minnesota From Another State"), 
-                    palette="Set1",
-                    guide=guide_legend(title="Direction of Migration")) +
-  scale_y_continuous(labels=scales::percent) +
-  geom_errorbar(aes(ymin=lower_error, ymax=upper_error), 
-                width = .2,
-                position=position_dodge(.9)) +
-  labs(title = "Share of 18-23 Year-olds Moving to and From Minnesota that Were Students",
-       y="Percent of 18-23 Year-olds who Moved that Were Students",
+  labs(title = "Educational Attainment of 23-29 Year-olds who Migated between Minnesota and Another State",
+       y="Percent of 18-23 Year-olds who Moved",
        x="",
-       caption = "Source: MN House Research. Error bars represent 90% confidence intervals. 
-       2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.")
+       caption = "2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.") +
+  geom_text(aes(label = ifelse(value>=.05, paste0(round(value*100,1),'%'), "")), 
+            position=position_stack(vjust=0.5),
+            size =7)
 
-ggsave("students_18.png", student_18,width=8,height=6) 
 
-student_24 <- filter(student_migration, agegroup=="24 to 29") %>%
-  mutate(direction = factor(direction, levels=c("Outmigration","Inmigration"))) %>% 
-  ggplot(aes(x=geogroup,
-             y=value,
-             fill=direction)) +
-  theme_migration +
-  geom_bar(stat="identity",position="dodge") +
-  scale_fill_brewer(labels=c("Left for Another State", 
-                             "Moved to Minnesota From Another State"), 
-                    palette="Set1",
-                    guide=guide_legend(title="Direction of Migration")) +
-  scale_y_continuous(labels=scales::percent) +
-  geom_errorbar(aes(ymin=lower_error, ymax=upper_error), 
-                width = .2,
-                position=position_dodge(.9)) +
-  labs(title = "Share of 24-29 Year-olds Moving to and From Minnesota that Were Students",
-       y="Percent of 24-29 Year-olds who Moved that Were Students",
-       x="",
-       caption = "Source: MN House Research. Error bars represent 90% confidence intervals. 
-       2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.")
+ggsave("educ_24.png", educ_24,width=8,height=6) 
 
-ggsave("students_24.png", student_24,width=8,height=6) 
 
