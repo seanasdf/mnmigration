@@ -79,7 +79,7 @@ state_migration <- gather(state_migration,
          err_low = ifelse(direction == "Inmigration", moved_to_mn_low, moved_from_mn_low),
          err_upp = ifelse(direction == "Inmigration", moved_to_mn_upp, moved_from_mn_upp)) %>% 
   select(geogroup, agegroup, Place, variable, value, direction, err_low, err_upp) %>% 
-  left_join(most_migration, by=c("geogroup", "agegroup", "Place")) %>% 
+  left_join(most_migration, by=c("agegroup", "Place")) %>% 
   filter(rank<15)
 
 ######################################

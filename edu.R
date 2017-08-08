@@ -139,7 +139,7 @@ educ_migration <- left_join(educ_inmigration, educ_outmigration,
 
 
 ######################################
-####### Graph Student Status #########
+####### Graph Educ. Attainment #######
 ######################################
 
 library(ggplot2)
