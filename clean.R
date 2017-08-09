@@ -74,7 +74,7 @@ inmigration <- read_csv("usa_00018.csv.gz") %>%
       AGE > 31 ~ "32 and Over")
     )
 
-save(inmigration, file="inmigration.rda")
+save(inmigration, file="./caches/inmigration.rda")
 
 
 ######################################
@@ -107,5 +107,5 @@ outmigration <- read_csv("usa_00017.csv.gz") %>%
       AGE %in% c(30,31) ~ "30-31 Years Old",
       AGE > 31 ~ "32 and Over"))
 
-save(outmigration, file="outmigration.rda")
+save(outmigration, file="./caches/outmigration.rda")
 

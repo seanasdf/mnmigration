@@ -7,8 +7,8 @@ library(srvyr)
 ######################################
 
 #read in inmigration data
-if (file.exists("inmigration.rda")) {
-  load("inmigration.rda")
+if (file.exists("./caches/inmigration.rda")) {
+  load("./caches/inmigration.rda")
 } else {
   source("clean.R")
 }
@@ -21,6 +21,8 @@ student_inmigration <- inmigration %>%
                              SCHOOL == 2 ~ "Student",
                              SCHOOL %in% c(0, 9) ~ "Missing/NA"),
          student = as.factor(student)) %>%
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>%
   group_by(geogroup, agegroup, moved_states) %>% 
   summarise(pct_student = survey_mean(student=="Student", proportion = TRUE, vartype = "ci", level=.9),
@@ -32,8 +34,8 @@ student_inmigration <- inmigration %>%
 ######### Migration From MN ##########
 ######### To Other States ############
 ######################################
-if (file.exists("outmigration.rda")) {
-  load("outmigration.rda")
+if (file.exists("./caches/outmigration.rda")) {
+  load("./caches/outmigration.rda")
 } else {
   source("clean.R")
 }
@@ -44,6 +46,8 @@ student_outmigration <- outmigration %>%
                              SCHOOL == 2 ~ "Student",
                              SCHOOL %in% c(0, 9) ~ "Missing/NA"),
          student = as.factor(student)) %>% 
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT)  %>%
   group_by(geogroup, agegroup) %>%
   summarise(pct_student = survey_mean(student=="Student", proportion = TRUE, vartype = "ci", level=.9),
@@ -131,7 +135,7 @@ student_18 <- filter(student_migration, agegroup=="18 to 23") %>%
                    caption = "Source: MN House Research. Error bars represent 90% confidence intervals. 
                    2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.")
 
-ggsave("students_18.png", student_18,width=8,height=6) 
+ggsave("./plots/students_18.png", student_18,width=8,height=6) 
 
 student_24 <- filter(student_migration, agegroup=="24 to 29") %>%
   mutate(direction = factor(direction, levels=c("Outmigration","Inmigration"))) %>% 
@@ -154,5 +158,5 @@ student_24 <- filter(student_migration, agegroup=="24 to 29") %>%
        caption = "Source: MN House Research. Error bars represent 90% confidence intervals. 
        2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.")
 
-ggsave("students_24.png", student_24,width=8,height=6) 
+ggsave("./plots/students_24.png", student_24,width=8,height=6) 
 

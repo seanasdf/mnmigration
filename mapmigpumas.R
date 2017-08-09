@@ -65,12 +65,12 @@ library(maptools)
 library(rgeos)
 
 #Read in shapefile for MigPumas
-if (!file.exists("shapefile.rda")) {
+if (!file.exists("./caches/shapefile.rda")) {
   shapefile <- readOGR("./shapefile", "ipums_migpuma_pwpuma_2010")
   shapefile <- shapefile[shapefile@data$STATEFIP=="27",]
   save(shapefile, file="shapefile.rda")
 } else {
-  load("shapefile.rda")
+  load("./caches/shapefile.rda")
 }
 
 mnmap <- tidy(shapefile, region="PWPUMA") %>%

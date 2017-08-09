@@ -7,8 +7,8 @@ library(srvyr)
 ######################################
 
 #read in inmigration data
-if (file.exists("inmigration.rda")) {
-  load("inmigration.rda")
+if (file.exists("./caches/inmigration.rda")) {
+  load("./caches/inmigration.rda")
 } else {
   source("clean.R")
 }
@@ -16,19 +16,23 @@ if (file.exists("inmigration.rda")) {
 
 #get inmigration by geographic and age group
 inmigration_by_group <- inmigration %>%
-  #creat dummy variable to identify people who moved
+  #create dummy variable to identify people who moved
   mutate(moved_states = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<100, 1, 0)) %>%
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>%
   group_by(geogroup, agegroup) %>%
   summarise(pct_moved_in = survey_mean(moved_states), moved_in = survey_total(moved_states)) 
 
-
+identical(inmigration_by_group_old, inmigration_by_group)
 ######################################
 ######### Migration from MN ##########
 ######################################
 
 #Get total population for each region
 population_by_region <- inmigration %>%
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>% 
   group_by(geogroup, agegroup) %>% 
   summarise(population = survey_total())
@@ -39,13 +43,15 @@ regional_n <- inmigration %>% group_by(geogroup, agegroup) %>% summarise(n=n())
 population_by_region <- left_join(population_by_region, regional_n)
 
 
-if (file.exists("outmigration.rda")) {
-  load("outmigration.rda")
+if (file.exists("./caches/outmigration.rda")) {
+  load("./caches/outmigration.rda")
 } else {
   source("clean.R")
 }
 
-outmigration_by_group <- outmigration %>% 
+outmigration_by_group <- outmigration %>%
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT)  %>%
   group_by(geogroup, agegroup) %>%
   summarise(moved_out = survey_total()) %>% 
@@ -130,7 +136,7 @@ netmig18_pct <- filter(pct_netmig, agegroup=="18 to 23") %>%
                 width = .2,
                 position=position_dodge(.9))
 
-ggsave("netmig18_pct.png", netmig18_pct,width=8,height=6) 
+ggsave("./plots/netmig18_pct.png", netmig18_pct,width=8,height=6) 
 
 ####Actually plot the thing for 24 to 29 year olds####
 netmig24_pct <- filter(pct_netmig, agegroup=="24 to 29") %>%
@@ -149,6 +155,6 @@ netmig24_pct <- filter(pct_netmig, agegroup=="24 to 29") %>%
                 position=position_dodge(.9))
 
 
-ggsave("netmig24_pct.png", netmig24_pct,width=8,height=6) 
+ggsave("./plots/netmig24_pct.png", netmig24_pct,width=8,height=6) 
 
 

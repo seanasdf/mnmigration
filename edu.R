@@ -7,12 +7,12 @@ library(srvyr)
 ######################################
 
 #cache the survey analysis by education, because it takes a while.
-if (file.exists("educanalysis.rda")) {
-  load("educanalysis.rda")
+if (file.exists("./caches/educanalysis.rda")) {
+  load("./caches/educanalysis.rda")
 } else {
   
-  if (file.exists("inmigration.rda")) {
-    load("inmigration.rda")
+  if (file.exists("./caches/inmigration.rda")) {
+    load("./caches/inmigration.rda")
   } 
   else {source("clean.R")}
   
@@ -23,6 +23,8 @@ if (file.exists("educanalysis.rda")) {
   educ_inmigration <- inmigration %>%
     left_join(educ_groups) %>%
     mutate(moved_states = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<100, 1, 0)) %>% 
+    #rename replicate weights flag so it doesn't get used as a replicate weight
+    rename(repwtflag = REPWTP) %>% 
     as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>%
     group_by(geogroup, agegroup, moved_states) %>% 
     summarise(missing_edu = survey_mean(Group=="NA/Missing", proportion = TRUE, vartype = "ci", level=.9),
@@ -35,7 +37,7 @@ if (file.exists("educanalysis.rda")) {
   filter(moved_states==1) %>%
   select(-moved_states)
 
-  save(educ_inmigration, file="educanalysis.rda")
+  save(educ_inmigration, file="./caches/educanalysis.rda")
 }
 
 
@@ -43,8 +45,8 @@ if (file.exists("educanalysis.rda")) {
 ######### Migration From MN ##########
 ######### To Other States ############
 ######################################
-if (file.exists("outmigration.rda")) {
-  load("outmigration.rda")
+if (file.exists("./caches/outmigration.rda")) {
+  load("./caches/outmigration.rda")
 } else {
   source("clean.R")
 }
@@ -204,6 +206,6 @@ educ_24 <- filter(educ_migration,
             size =7)
 
 
-ggsave("educ_24.png", educ_24,width=8,height=6) 
+ggsave("./plots/educ_24.png", educ_24,width=8,height=6) 
 
 

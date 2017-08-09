@@ -7,8 +7,8 @@ library(srvyr)
 ######################################
 
 #read in inmigration data
-if (file.exists("inmigration.rda")) {
-  load("inmigration.rda")
+if (file.exists("./caches/inmigration.rda")) {
+  load("./caches/inmigration.rda")
 } else {
   source("clean.R")
 }
@@ -20,6 +20,8 @@ inmigration_by_age <- inmigration %>%
   #creat dummy variable to identify people who moved
   mutate(moved_states = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<100, 1, 0),
          AGE = as.character(AGE)) %>%
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>%
   group_by(geogroup, AGE) %>%
   summarise(pct_moved_in = survey_mean(moved_states))
@@ -33,6 +35,8 @@ inmigration_by_age <- inmigration %>%
 #Get total population for each region
 population_by_region <- inmigration %>%
   mutate(AGE = as.character(AGE)) %>% 
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>% 
   group_by(geogroup, AGE) %>% 
   summarise(population = survey_total())
@@ -43,8 +47,8 @@ regional_n <- inmigration %>% mutate(AGE=as.character(AGE)) %>% group_by(geogrou
 population_by_region <- left_join(population_by_region, regional_n)
 
 
-if (file.exists("outmigration.rda")) {
-  load("outmigration.rda")
+if (file.exists("./caches/outmigration.rda")) {
+  load("./caches/outmigration.rda")
 } else {
   source("clean.R")
 }
@@ -52,6 +56,8 @@ if (file.exists("outmigration.rda")) {
 outmigration_by_age <- outmigration %>%
   filter(AGE > 17 & AGE < 32)  %>% 
   mutate(AGE = as.character(AGE)) %>% 
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT)  %>%
   group_by(geogroup, AGE) %>%
   summarise(moved_out = survey_total()) %>% 
@@ -131,7 +137,7 @@ linegraphs <- ggplot(pct_netmig, aes(x=as.numeric(AGE), y=mig, group=direction, 
        x="Age") +
   scale_y_continuous(labels=scales::percent) 
 
-ggsave("linegraphs.png", linegraphs,width=8,height=6) 
+ggsave("./plots/linegraphs.png", linegraphs,width=8,height=6) 
 
 
 #create another graph--with error bars
@@ -140,4 +146,4 @@ linegraphs_witherrors <- linegraphs +
                 width = .2) +
   labs(caption = "Source: MN House Research. Error bars represent 90% confidence intervals.
        2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.")
-ggsave("linegraphs_errorbars.png", linegraphs_witherrors,width=8,height=6) 
+ggsave("./plots/linegraphs_errorbars.png", linegraphs_witherrors,width=8,height=6) 

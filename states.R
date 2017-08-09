@@ -7,8 +7,8 @@ library(srvyr)
 ######################################
 
 #read in inmigration data
-if (file.exists("inmigration.rda")) {
-  load("inmigration.rda")
+if (file.exists("./caches/inmigration.rda")) {
+  load("./caches/inmigration.rda")
 } else {
   source("clean.R")
 }
@@ -20,18 +20,29 @@ state_inmigration <- inmigration %>%
          MIGPLAC1=as.factor(MIGPLAC1)) %>%
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>%
   group_by(geogroup, agegroup, moved_states, MIGPLAC1) %>%
-  summarise(moved_to_mn = survey_total(vartype = "ci", level=.9)) %>% 
-  mutate(MIGPLAC1 = as.numeric(as.character(MIGPLAC1))) %>% 
-  filter(MIGPLAC1 < 100 & (moved_states==1)) %>%
-  select(-moved_states)
+  summarise(pct=survey_mean(vartype = "ci", level=.9)) %>%
+  filter(as.numeric(MIGPLAC1) < 100 & (moved_states==1))
 
+# #Try using Survey
+# library(survey)
+# # Get count of how many people moved to MN from another state
+# state_inmigration <- inmigration %>%
+#   #create dummy variable to identify people who moved
+#   mutate(moved_states = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<100, 1, 0),
+#          MIGPLAC1=as.factor(MIGPLAC1)) %>%
+#   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT)
+# 
+# state_inmigration_analysis <- svyby(~MIGPLAC1
+#                                     ~geogroup, 
+#                                     state_inmigration,
+#                                     svytable)
 
 ######################################
 ######### Migration From MN ##########
 ######### To Other States ############
 ######################################
-if (file.exists("outmigration.rda")) {
-  load("outmigration.rda")
+if (file.exists("./caches/outmigration.rda")) {
+  load("./caches/outmigration.rda")
 } else {
   source("clean.R")
 }
@@ -112,4 +123,4 @@ states_18_outmigration
        caption = "Source: MN House Research. Error bars represent 90% confidence intervals. 
                    2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.")
 
-ggsave("students_18.png", student_18,width=8,height=6) 
+ggsave("./plots/students_18.png", student_18,width=8,height=6) 
