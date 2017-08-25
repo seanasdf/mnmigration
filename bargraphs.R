@@ -24,7 +24,26 @@ inmigration_by_group <- inmigration %>%
   group_by(geogroup, agegroup) %>%
   summarise(pct_moved_in = survey_mean(moved_states), moved_in = survey_total(moved_states)) 
 
-identical(inmigration_by_group_old, inmigration_by_group)
+inmig_test <- inmigration
+
+repwt_est <- function(df, nm, var) {
+    
+    var <- enquo(var)
+    for (i in 1:80) {
+      
+      weight <- paste0("REPWTP", as.character(i))
+      weight <- enquo(weight)
+      print(weight)
+      nm_name <- paste0(quo_name(nm), as.character(i))
+      
+      df <- df %>% mutate(!!nm_name := !!weight) 
+    }
+  df
+}
+
+test <- repwt_est(inmig_test, quo(newinctot), INCTOT)
+
+
 ######################################
 ######### Migration from MN ##########
 ######################################

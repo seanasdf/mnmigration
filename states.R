@@ -115,7 +115,12 @@ statenames <- read_excel("migrationplaces.xlsx")
 
 #merge together in and out migration
 top_states <- rbind(top_states_in, top_states_out) %>% 
-  left_join(statenames)
+  left_join(statenames) %>%
+  ungroup() %>% 
+  mutate(geogroup = ifelse(geogroup=="Metro", "Other Metro Counties", geogroup),
+         geogroup = ifelse(geogroup=="Greater MN", "Greater Minnesota", geogroup),
+         geogroup = factor(geogroup, 
+                           levels=c("Ramsey","Hennepin","Other Metro Counties","Greater Minnesota")))
 
 ######################################
 ######### create plot theme ##########
@@ -182,10 +187,12 @@ states_18_outmigration <- filter(top_states,
   theme(strip.background=element_rect(color="white", fill="white")) +
   labs(caption = "Source: MN House Research. 
        2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
-       title="Top Destinations/Sources of State-to-state Migration to/from Minnesota.",
-       subtitle="Percent of 18-23 Year Olds Moving to/from Minnesota and Another State")
+       title="Top 10 States for Migration to and from Minnesota Regions, 2011-2015",
+       subtitle="Percent of 18-23 Year Olds Who Moved") +
+  scale_fill_brewer(guide = guide_legend(reverse=TRUE),
+                    palette = "Set1")
 
 
 states_18_outmigration
 
-ggsave("./plots/states_18.png", states_18_outmigration,width=11.5,height=7) 
+ggsave("./plots/states_18.png", states_18_outmigration,width=11,height=8.5) 
