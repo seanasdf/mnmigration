@@ -13,7 +13,6 @@ if (file.exists("./caches/inmigration.rda")) {
   source("clean.R")
 }
 
-
 #get inmigration by geographic and age group
 inmigration_by_group <- inmigration %>%
   #create dummy variable to identify people who moved
@@ -23,25 +22,6 @@ inmigration_by_group <- inmigration %>%
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>%
   group_by(geogroup, agegroup) %>%
   summarise(pct_moved_in = survey_mean(moved_states), moved_in = survey_total(moved_states)) 
-
-inmig_test <- inmigration
-
-repwt_est <- function(df, nm, var) {
-    
-    var <- enquo(var)
-    for (i in 1:80) {
-      
-      weight <- paste0("REPWTP", as.character(i))
-      weight <- enquo(weight)
-      print(weight)
-      nm_name <- paste0(quo_name(nm), as.character(i))
-      
-      df <- df %>% mutate(!!nm_name := !!weight) 
-    }
-  df
-}
-
-test <- repwt_est(inmig_test, quo(newinctot), INCTOT)
 
 
 ######################################
@@ -55,12 +35,6 @@ population_by_region <- inmigration %>%
   as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>% 
   group_by(geogroup, agegroup) %>% 
   summarise(population = survey_total())
-
-#get N for each region
-regional_n <- inmigration %>% group_by(geogroup, agegroup) %>% summarise(n=n())
-
-population_by_region <- left_join(population_by_region, regional_n)
-
 
 if (file.exists("./caches/outmigration.rda")) {
   load("./caches/outmigration.rda")
@@ -76,9 +50,9 @@ outmigration_by_group <- outmigration %>%
   summarise(moved_out = survey_total()) %>% 
   left_join(population_by_region) %>%
   mutate(pct_moved_out = moved_out/population, 
-         pct_moved_out_se = sqrt((pct_moved_out*(1-pct_moved_out)/n))
+         pct_moved_out_se = sqrt(moved_out_se^2 + ((pct_moved_out/population)^2)*population_se^2)/(population)
          ) %>% 
-  select(-population, population_se)
+  select(-population, -population_se)
 
 
 
@@ -98,12 +72,14 @@ write.csv(netmig, "netmigration.csv")
 pct_netmig <- left_join(inmigration_by_group, outmigration_by_group) %>%
   mutate(geogroup = ifelse(geogroup=="Greater MN", "Greater Minnesota", geogroup),
          geogroup = ifelse(geogroup=="Metro", "Other Metro Counties", geogroup)) %>%
-  select(-moved_in, -moved_in_se, -moved_out, -moved_out_se, -n) %>% 
+  select(-moved_in, -moved_in_se, -moved_out, -moved_out_se) %>% 
   gather(direction, mig, pct_moved_in, pct_moved_out) %>%
   mutate(se = ifelse(direction=="pct_moved_in", pct_moved_in_se, pct_moved_out_se)) %>%
   select(-pct_moved_in_se, -pct_moved_out_se) %>%
   mutate(geogroup = factor(geogroup, levels=c("Ramsey","Hennepin","Other Metro Counties","Greater Minnesota")),
-         direction = factor(direction, levels=c("pct_moved_out", "pct_moved_in")))
+         direction = factor(direction, levels=c("pct_moved_out", "pct_moved_in")),
+         mig = mig *1000,
+         se = se * 1000)
 
 ####Create ggplot2 theme for plots####
 library(ggplot2)
@@ -145,12 +121,11 @@ netmig18_pct <- filter(pct_netmig, agegroup=="18 to 23") %>%
   ggplot(aes(x=geogroup, y=mig, fill=direction)) +
   theme_migration +
   geom_bar(stat="identity", position="dodge") +
-  scale_y_continuous(labels=scales::percent) +
   scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                     palette="Set1")+
-  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Aged 18 to 23",
+  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 18 to 23",
        caption = "Source: MN House Research. Error bars represent 90% confidence intervals.\n 2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
-       y="Percent of Population in Age Group") +
+       y="Persons Moving per 1,000 Persons Ages 18 to 23") +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
                 position=position_dodge(.9))
@@ -162,18 +137,68 @@ netmig24_pct <- filter(pct_netmig, agegroup=="24 to 29") %>%
   ggplot(aes(x=geogroup, y=mig, fill=direction)) +
   geom_bar(stat="identity", position="dodge") +
   theme_migration +
-  scale_y_continuous(labels=scales::percent) +
   scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                     palette="Set1")+
-  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Aged 24 to 29",
+  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 24 to 29",
        caption = "Source: MN House Research. Error bars represent 90% confidence intervals. 
        2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
-       y="Percent of Population in Age Group") +
+       y="Persons Moving per 1,000 Persons Ages 24 to 29") +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
                 position=position_dodge(.9))
 
 
 ggsave("./plots/netmig24_pct.png", netmig24_pct,width=8,height=6) 
+
+
+######################################
+##### Graph total Migration ########
+######################################
+
+
+total_netmig <- left_join(inmigration_by_group, outmigration_by_group) %>%
+  mutate(geogroup = ifelse(geogroup=="Greater MN", "Greater Minnesota", geogroup),
+         geogroup = ifelse(geogroup=="Metro", "Other Metro Counties", geogroup)) %>%
+  select(-pct_moved_in, -pct_moved_in_se, -pct_moved_out, -pct_moved_out_se) %>% 
+  gather(direction, mig, moved_in, moved_out) %>%
+  mutate(se = ifelse(direction=="moved_in", moved_in_se, moved_out_se)) %>%
+  select(-moved_in_se, -moved_out_se) %>%
+  mutate(geogroup = factor(geogroup, levels=c("Ramsey","Hennepin","Other Metro Counties","Greater Minnesota")),
+         direction = factor(direction, levels=c("moved_out", "moved_in")))
+
+####Actually plot the thing for 18 to 23 year olds####
+netmig18_tot <- filter(total_netmig, agegroup=="18 to 23") %>%
+  ggplot(aes(x=geogroup, y=mig, fill=direction)) +
+  theme_migration +
+  geom_bar(stat="identity", position="dodge") +
+  scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
+                    palette="Set1")+
+  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 18 to 23",
+       caption = "Source: MN House Research. Error bars represent 90% confidence intervals.\n 2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
+       y="Total Individuals Ages 18 to 23 Moving") +
+  scale_y_continuous(labels=scales::comma) +
+  geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
+                width = .2,
+                position=position_dodge(.9))
+
+ggsave("./plots/netmig18_tot.png", netmig18_tot,width=8,height=6) 
+
+####Actually plot the thing for 24 to 29 year olds####
+netmig24_tot <- filter(total_netmig, agegroup=="24 to 29") %>%
+  ggplot(aes(x=geogroup, y=mig, fill=direction)) +
+  theme_migration +
+  geom_bar(stat="identity", position="dodge") +
+  scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
+                    palette="Set1")+
+  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 24 to 29",
+       caption = "Source: MN House Research. Error bars represent 90% confidence intervals.\n 2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
+       y="Total Individuals Ages 24 to 29 Moving") +
+  scale_y_continuous(labels=scales::comma) +
+  geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
+                width = .2,
+                position=position_dodge(.9))
+
+
+ggsave("./plots/netmig24_tot.png", netmig24_tot,width=8,height=6) 
 
 
