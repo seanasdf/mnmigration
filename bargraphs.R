@@ -175,7 +175,7 @@ netmig18_tot <- filter(total_netmig, agegroup=="18 to 23") %>%
                     palette="Set1")+
   labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 18 to 23",
        caption = "Source: MN House Research. Error bars represent 90% confidence intervals.\n 2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
-       y="Total Individuals Ages 18 to 23 Moving") +
+       y="Total Individuals Ages 18 to 23 Who Moved") +
   scale_y_continuous(labels=scales::comma) +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
@@ -192,7 +192,7 @@ netmig24_tot <- filter(total_netmig, agegroup=="24 to 29") %>%
                     palette="Set1")+
   labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 24 to 29",
        caption = "Source: MN House Research. Error bars represent 90% confidence intervals.\n 2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
-       y="Total Individuals Ages 24 to 29 Moving") +
+       y="Total Individuals Ages 18 to 23 Who Moved") +
   scale_y_continuous(labels=scales::comma) +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
