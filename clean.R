@@ -59,8 +59,8 @@ inmigration <- read_csv("usa_00018.csv.gz") %>%
   mutate(
     agegroup = case_when(
       AGE<18 ~ "17 and Younger",
-      AGE>=18 & AGE<24 ~ "18 to 23",
-      AGE>=24 & AGE<30 ~ "24 to 29",
+      AGE>=18 & AGE<22 ~ "18 to 21",
+      AGE>=22 & AGE<30 ~ "22 to 29",
       AGE>=30 ~ "30 and Over"),
     smallagegroup = case_when(
       AGE < 18 ~ "17 and Younger",
@@ -93,8 +93,8 @@ outmigration <- read_csv("usa_00017.csv.gz") %>%
   mutate(
     agegroup = case_when(
       AGE<18 ~ "17 and Younger",
-      AGE>=18 & AGE<24 ~ "18 to 23",
-      AGE>=24 & AGE<30 ~ "24 to 29",
+      AGE>=18 & AGE<22 ~ "18 to 21",
+      AGE>=22 & AGE<30 ~ "22 to 29",
       AGE>=30 ~ "30 and Over"),
     smallagegroup = case_when(
       AGE <18 ~ "17 and Younger",

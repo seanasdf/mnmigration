@@ -58,6 +58,9 @@ netmig_regions <- left_join(inmigration_by_age, outmigration_by_age) %>%
          geogroup = factor(geogroup, levels=c("Ramsey","Hennepin","Other Metro Counties","Greater Minnesota"))) %>% 
   select(AGE, geogroup, netmig, se)
 
+
+save(netmig_regions, file="./caches/netmig_regions.rda")
+
 ######################################
 ##### Graph Percent Migration ########
 ######################################

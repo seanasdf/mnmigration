@@ -65,7 +65,7 @@ outmigration_by_age <- outmigration %>%
 ######################################
 ##### Merge In and Outmigration ######
 ######################################
-pct_netmig <- left_join(inmigration_by_age, outmigration_by_age) %>%
+state_inout_byage <- left_join(inmigration_by_age, outmigration_by_age) %>%
   gather(direction, mig, pct_moved_in, pct_moved_out) %>%
   mutate(se = ifelse(direction=="pct_moved_in", pct_moved_in_se, pct_moved_out_se)) %>%
   select(-pct_moved_in_se, -pct_moved_out_se) %>%
@@ -73,92 +73,4 @@ pct_netmig <- left_join(inmigration_by_age, outmigration_by_age) %>%
          mig = mig * 1000, 
          se= se *1000) 
 
-######################################
-##### Graph Percent Migration ########
-######################################
-
-library(ggplot2)
-library(showtext)
-
-#add roboto font from google
-font.add.google("Roboto", "roboto")
-showtext.auto()
-
-#create default text
-migration_text <- element_text(family="roboto", 
-                               size=30, 
-                               face="plain", 
-                               color="black",
-                               lineheight = 0.4
-)
-
-#create graph theme
-theme_migration <-  theme(
-  panel.background = element_blank(),
-  axis.ticks.x=element_blank(),
-  axis.ticks.y=element_blank(),
-  axis.title.x=migration_text,
-  axis.title.y=migration_text,
-  axis.text.x=migration_text,
-  axis.text.y=migration_text,
-  legend.text=migration_text,
-  plot.caption = migration_text,
-  legend.title=element_blank(),
-  legend.position="bottom",
-  plot.title =migration_text,
-  panel.grid.major.y = element_line(color="#d9d9d9"),
-  panel.grid.major.x = element_blank()
-) + 
-  theme(plot.title = element_text(size=36, hjust = 0.5),
-        plot.caption = element_text(size=24))
-
-
-#Get statewide line graph of migration by age.
-state_linegraph <- pct_netmig %>% 
-  mutate(AGE = as.numeric(AGE)) %>% 
-  ggplot(aes(x=AGE, y=mig, group=direction, colour=direction)) +
-  geom_line() +
-  theme_migration +
-  theme(strip.text.x = migration_text,
-        strip.background=element_rect(color="white", fill="white")) +
-  expand_limits(y=0) +
-  scale_color_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
-                     palette="Set1") +
-  labs(title = "Average Annual Migration between Minnesota and Other States by Age, 2011-2015",
-       caption = "Source: MN House Research.
-       2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
-       y="Individuals Migrating per 1,000 Indidivuals of Given Age",
-       x="Age") +
-  scale_y_continuous(labels=scales::comma) 
-
-ggsave("./plots/statelinegraph.png", state_linegraph,width=8,height=6) 
-
-#limit line graph to migration of young people
-state_linegraph_young <- pct_netmig %>% 
-  mutate(AGE = as.numeric(AGE)) %>% 
-  filter(AGE>17 & AGE<32) %>% 
-  ggplot(aes(x=AGE, y=mig, group=direction, colour=direction)) +
-  geom_point(shape=1) +
-  geom_line() +
-  theme_migration +
-  theme(strip.text.x = migration_text,
-        strip.background=element_rect(color="white", fill="white")) +
-  expand_limits(y=0) +
-  scale_color_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
-                     palette="Set1") +
-  labs(title = "Average Annual Migration between Minnesota and Other States by Age, 2011-2015",
-       caption = "Source: MN House Research.
-       2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.",
-       y="Individuals Migrating per 1,000 Indidivuals of Given Age",
-       x="Age") +
-  scale_y_continuous(labels=scales::comma) 
-
-ggsave("./plots/statelinegraph_young.png", state_linegraph_young,width=8,height=6) 
-
-#create another graph--with error bars
-state_linegraph_young_witherrors <- state_linegraph_young +
-  geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
-                width = .2) +
-  labs(caption = "Source: MN House Research. Error bars represent 90% confidence intervals.
-       2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.")
-ggsave("./plots/state_linegraph_young_witherrors.png", state_linegraph_young_witherrors,width=8,height=6) 
+save(state_inout_byage, file="./caches/stateinout.rda")
