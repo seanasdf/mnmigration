@@ -80,7 +80,7 @@ educ_migration <- left_join(educ_inmigration, educ_outmigration,
                                suffix=c("_in", "_out")) %>% 
   mutate(geogroup = ifelse(geogroup=="Greater MN", "Greater Minnesota", geogroup),
          geogroup = ifelse(geogroup=="Metro", "Other Metro Counties", geogroup)) %>% 
-  filter(agegroup %in% c("18 to 23", "24 to 29")) %>% 
+  filter(agegroup %in% c("18 to 21", "22 to 29")) %>% 
   gather(key = variable, value=value, missing_edu_in, missing_edu_out,
                                       less_hs_in, less_hs_out, 
                                       hs_ged_in, hs_ged_out,
@@ -138,74 +138,5 @@ educ_migration <- left_join(educ_inmigration, educ_outmigration,
                                                 "Advanced Degree"))
   )
 
-
-
-######################################
-####### Graph Educ. Attainment #######
-######################################
-
-library(ggplot2)
-library(showtext)
-
-#add roboto font from google
-font.add.google("Roboto", "roboto")
-showtext.auto()
-
-#create default text
-migration_text <- element_text(family="roboto", 
-                               size=30, 
-                               face="plain", 
-                               color="black",
-                               lineheight = 0.4
-)
-
-#create graph theme
-theme_migration <-  theme(
-  panel.background = element_blank(),
-  axis.ticks.x=element_blank(),
-  axis.ticks.y=element_blank(),
-  axis.title.x=element_blank(),
-  axis.title.y=migration_text,
-  axis.text.x=migration_text,
-  axis.text.y=element_blank(),
-  legend.text=migration_text,
-  plot.caption = migration_text,
-  legend.title=element_blank(),
-  legend.position="bottom",
-  plot.title =migration_text,
-  panel.grid.major.y = element_blank(),
-  panel.grid.major.x = element_blank()
-) + 
-  theme(plot.title = element_text(size=36, hjust = 0.5),
-        plot.caption = element_text(size=24),
-        legend.text=element_text(size=24))
-
-
-#Graph education levels for 24 to 29 year olds
-educ_24 <- filter(educ_migration, 
-                  agegroup=="24 to 29" & variable !="Missing/NA")  %>%
-  mutate(direction = ifelse(direction=="Inmigration", "Moved to Minnesota", "Moved from Minnesota")) %>% 
-  ggplot(aes(x=direction,
-             y=value,
-             fill=variable)) +
-  theme_migration +
-  theme(strip.text.x = migration_text,
-        strip.background=element_rect(color="white", fill="white")) +
-  geom_bar(stat="identity",position="fill") +
-  #coord_flip() +
-  scale_fill_brewer(palette="Paired") +
-  scale_y_continuous(labels=scales::percent,
-                     trans = "reverse") +
-  facet_wrap(~geogroup, ncol=2) +
-  labs(title = "Educational Attainment of 23-29 Year-olds who Migated between Minnesota and Another State",
-       y="Percent of 18-23 Year-olds who Moved",
-       x="",
-       caption = "2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota.") +
-  geom_text(aes(label = ifelse(value>=.05, paste0(round(value*100,1),'%'), "")), 
-            position=position_stack(vjust=0.5),
-            size =7)
-
-
-ggsave("./plots/educ_24.png", educ_24,width=8,height=6) 
-
+save(educ_migration, file="./caches/educresults.rda")
 

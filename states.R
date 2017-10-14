@@ -122,6 +122,7 @@ top_states <- rbind(top_states_in, top_states_out) %>%
          geogroup = factor(geogroup, 
                            levels=c("Ramsey","Hennepin","Other Metro Counties","Greater Minnesota")))
 
+save(top_states, file="statetop10.rda")
 ######################################
 ######### create plot theme ##########
 ######################################
@@ -166,7 +167,7 @@ theme_migration <-  theme(
 ######### Graph top states ###########
 ######################################
 states_18_outmigration <- filter(top_states, 
-                                 agegroup=="18 to 23") %>%
+                                 agegroup=="18 to 21") %>%
   mutate(barlabel=paste0(statename,
                       ", " ,
                       as.character(format(pct*100,digits=2)),

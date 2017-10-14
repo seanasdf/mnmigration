@@ -327,3 +327,142 @@ student_22 <- filter(student_migration, agegroup=="22 to 29") %>%
        caption = caption_witherrors)
 
 ggsave("./plots/student_22.png", student_22,width=8,height=6) 
+
+
+######################################
+######### Graph Birthplace  ##########
+######################################
+load("./caches/birthplace.rda")
+
+#run theme script if necessary
+if (!exists("theme_migration")) {
+  source("theme.R")
+}
+
+bp_22 <- 
+  filter(bp_inmigration_long, agegroup=="22 to 29" & Birthplace !="pct_other") %>%
+  mutate(Birthplace = factor(Birthplace, levels=rev(levels(Birthplace)))) %>%
+  arrange(geogroup, Birthplace) %>% 
+  ggplot(aes(x=geogroup,
+             y=value, 
+             fill=Birthplace)) +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set1",
+                    guide = guide_legend(reverse = TRUE,
+                                         title = "Place of Birth"),
+                    labels = c("Another Country",
+                               "Another State/Territory",
+                               "Minnesota")) +
+  geom_bar(stat="identity", position="stack") +
+  geom_text(aes(label = ifelse(value>=.05, paste0(round(value*100,1),'%'), "")), 
+            position=position_stack(vjust=0.5),
+            size =10) +
+  scale_y_continuous(labels=scales::percent) +
+  theme_migration +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  labs(title = "Place of Birth of 22-29 Year-olds who Moved to Minnesota from Another State, 2011-2015",
+       y="Percent of 18-22 Year-olds who Moved",
+       x="",
+       caption = caption_noerrors)
+
+
+
+bp_22
+
+
+ggsave("./plots/bp_22.png", bp_22,width=8,height=6) 
+
+######################################
+####### Graph Educ. Attainment #######
+######################################
+load("./caches/educresults.rda")
+
+#run theme script if necessary
+if (!exists("theme_migration")) {
+  source("theme.R")
+}
+
+#Graph education levels for 24 to 29 year olds
+educ_22 <- filter(educ_migration, 
+                  agegroup=="22 to 29" & variable !="Missing/NA")  %>%
+  mutate(direction = ifelse(direction=="Inmigration", "Moved to Minnesota", "Moved from Minnesota")) %>% 
+  ggplot(aes(x=direction,
+             y=value,
+             fill=variable)) +
+  theme_migration +
+  theme(strip.text.x = migration_text,
+        strip.background=element_rect(color="white", fill="white"),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.y=element_blank()) +
+  geom_bar(stat="identity",position="fill") +
+  #coord_flip() +
+  scale_fill_brewer(palette="Paired") +
+  scale_y_continuous(labels=scales::percent,
+                     trans = "reverse") +
+  facet_wrap(~geogroup, ncol=2) +
+  labs(title = "Educational Attainment of 22-29 Year-olds who Migated between Minnesota and Another State",
+       y="Percent of 22 to 29 Year-olds who Moved",
+       x="",
+       caption = caption_noerrors) +
+  geom_text(aes(label = ifelse(value>=.05, paste0(round(value*100,1),'%'), "")), 
+            position=position_stack(vjust=0.5),
+            size =7) 
+
+
+ggsave("./plots/educ_22.png", educ_22,width=8,height=6) 
+
+######################################
+######### Graph top states ###########
+######################################
+load("statetop10.rda")
+
+#run theme script if necessary
+if (!exists("theme_migration")) {
+  source("theme.R")
+}
+
+states_18_outmigration <- filter(top_states, 
+                                 agegroup=="18 to 21") %>%
+  mutate(barlabel=paste0(statename,
+                         ", " ,
+                         as.character(format(pct*100,digits=2)),
+                         "%")) %>% 
+  ggplot(aes(x=reorder(rank, pct),
+             y=pct,
+             fill=rev(direction))) +
+  geom_bar(stat="identity") +
+  coord_flip() +
+  facet_grid(direction~geogroup) +
+  geom_text(aes(label=ifelse(pct<.25, barlabel,"")),
+            size=10,
+            hjust=-.02) +
+  geom_text(aes(label=ifelse(pct>=.25, barlabel,"")),
+            size=10,
+            hjust=1.02,
+            color="white") +
+  theme_migration +
+  theme(plot.title = element_text(size=48, hjust = 0.5),
+        plot.subtitle = element_text(size=36, hjust = 0.5),
+        plot.caption = element_text(size=24),
+        strip.text.x = element_text(size=36),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        strip.background=element_rect(color="white", fill="white")) +
+  labs(caption = caption_noerrors,
+       title="Top 10 States for Migration to and from Minnesota Regions, 2011-2015",
+       subtitle="Share of 18-21 Year Olds Who Moved") +
+  scale_fill_brewer(guide = guide_legend(reverse=TRUE),
+                    palette = "Set1")
+
+
+ggsave("./plots/states_18.png", states_18_outmigration,width=11,height=8.5) 

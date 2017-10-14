@@ -2,9 +2,9 @@
 ##### LOAD THEME AND GGPLOT2 #########
 ######################################
 
-####Create ggplot2 theme for plots####
 library(ggplot2)
 library(showtext)
+library(dplyr)
 
 #add roboto font from google
 font.add.google("Roboto", "roboto")
