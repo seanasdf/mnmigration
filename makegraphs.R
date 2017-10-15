@@ -272,6 +272,68 @@ regional_netmig_linegraph <- netmig_regions %>%
 
 ggsave("./plots/netmig_byregion.png", regional_netmig_linegraph,width=8,height=6) 
 
+######################################
+##### Agregroup Net Migration ########
+######################################
+load("./caches/netmig_agegroup.rda")
+
+#run theme script if necessary
+if (!exists("theme_migration")) {
+  source("theme.R")
+}
+
+
+#rename statewide add linebreak to geogroup labels for later
+levels(netmigration_age$geogroup) <- gsub("Statewide", "Statewide Total", levels(netmigration_age$geogroup))
+levels(netmigration_age$geogroup) <- gsub(" ", "\n", levels(netmigration_age$geogroup))
+
+
+netmig_regions <- netmigration_age %>%
+  mutate(posneg = ifelse(netmig>=0, "pos", "neg"),
+         errortop = netmig + 1.645*se,
+         errorbot = netmig - 1.645*se) %>% 
+  ggplot(aes(x=geogroup, y=netmig, fill=(geogroup=="Statewide\nTotal"))) +
+  geom_bar(stat="identity") +
+  facet_wrap(~agegroup, 
+             labeller = labeller(agegroup = c("18 to 21" = "18 to 21 Year Olds", 
+                                              "22 to 29" = "22 to 29 Year Olds"))) +
+  geom_errorbar(aes(ymin=errorbot, ymax=errortop), 
+                width = .1) +
+  theme_migration +
+  theme(plot.title = element_text(size=32, hjust = 0.5),
+        strip.text.x =  element_text(family="roboto", 
+                                     size=28, 
+                                     face="plain", 
+                                     color="black",
+                                     lineheight = 0.4),
+        strip.background=element_rect(color="white", fill="white"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(color="#d9d9d9"),
+        axis.text.x = element_text(family="roboto", 
+                                   size=24, 
+                                   face="plain", 
+                                   color="black"),
+        plot.caption= element_text(size=20))+
+  labs(title = "Total Net Migration Between Minnesota and Other States, 2011-2015",
+       y="",
+       x="",
+       caption = paste0("\n",caption_witherrors)) +
+  scale_fill_manual(values = c("#377eb8", "#4daf4a"),
+                    labels = c("Geographic Subgroup", "Statewide Total")) +
+  geom_text(aes(label=ifelse(netmig>0,scales::comma(netmig),""), y=errortop), 
+            vjust = -1,
+            family="roboto", 
+            size=10, 
+            color="black") +
+  geom_text(aes(label=ifelse(netmig<0,scales::comma(netmig),""), y=errorbot), 
+            vjust = 1.7,
+            family="roboto", 
+            size=10, 
+            color="black") +
+  scale_y_continuous(labels=scales::comma) 
+netmig_regions
+
+ggsave("./plots/netmig_agegroup.png", netmig_regions,width=8,height=6) 
 
 
 ######################################
