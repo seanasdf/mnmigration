@@ -27,7 +27,7 @@ netmig18_pct <- filter(pct_inout_byregion, agegroup=="18 to 21") %>%
 ggsave("./plots/netmig18_pct.png", netmig18_pct,width=8,height=6) 
 
 ####Migration rate for 22 to 29 year olds####
-netmig24_pct <- filter(pct_inout_byregion, agegroup=="22 to 29") %>%
+netmig22_pct <- filter(pct_inout_byregion, agegroup=="22 to 29") %>%
   ggplot(aes(x=geogroup, y=mig, fill=direction)) +
   geom_bar(stat="identity", position="dodge") +
   theme_migration +
@@ -35,13 +35,13 @@ netmig24_pct <- filter(pct_inout_byregion, agegroup=="22 to 29") %>%
                     palette="Set1")+
   labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 22 to 29",
        caption = caption_witherrors,
-       y="Persons Moving per 1,000 Persons Ages 24 to 29") +
+       y="Persons Moving per 1,000 Persons Ages 22 to 29") +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
                 position=position_dodge(.9))
 
 
-ggsave("./plots/netmig24_pct.png", netmig24_pct,width=8,height=6) 
+ggsave("./plots/netmig22_pct.png", netmig22_pct,width=8,height=6) 
 
 
 ####Total Migration for 18 to 21 year olds####
@@ -62,7 +62,7 @@ netmig18_tot <- filter(total_inout_byregion, agegroup=="18 to 21") %>%
 ggsave("./plots/netmig18_tot.png", netmig18_tot,width=8,height=6) 
 
 ####Total migration for 22 to 29 year olds####
-netmig24_tot <- filter(total_inout_byregion, agegroup=="22 to 29") %>%
+netmig22_tot <- filter(total_inout_byregion, agegroup=="22 to 29") %>%
   ggplot(aes(x=geogroup, y=mig, fill=direction)) +
   theme_migration +
   geom_bar(stat="identity", position="dodge") +
@@ -77,7 +77,7 @@ netmig24_tot <- filter(total_inout_byregion, agegroup=="22 to 29") %>%
                 position=position_dodge(.9))
 
 
-ggsave("./plots/netmig24_tot.png", netmig24_tot,width=8,height=6) 
+ggsave("./plots/netmig22_tot.png", netmig22_tot,width=8,height=6) 
 
 ######################################
 ### Statewide In- and outmigration ###
@@ -97,7 +97,8 @@ state_linegraph <- state_inout_byage %>%
   geom_line() +
   theme_migration +
   theme(strip.text.x = migration_text,
-        strip.background=element_rect(color="white", fill="white")) +
+        strip.background=element_rect(color="white", fill="white"),
+        axis.title.x=migration_text) +
   expand_limits(y=0) +
   scale_color_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                      palette="Set1") +
@@ -118,7 +119,8 @@ state_linegraph_young <- state_inout_byage %>%
   geom_line() +
   theme_migration +
   theme(strip.text.x = migration_text,
-        strip.background=element_rect(color="white", fill="white")) +
+        strip.background=element_rect(color="white", fill="white"),
+        axis.title.x=migration_text) +
   expand_limits(y=0) +
   scale_color_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                      palette="Set1") +
@@ -230,9 +232,10 @@ netmig_linegraph_young <- netmig_mn %>%
        x="Age") +
   scale_y_continuous(labels=scales::comma, limits = c(-4500,4500), breaks = c(-4000, -2000,0, 2000, 4000)) +
   guides(fill=FALSE) +
-  theme(legend.position="none") +
+  theme(legend.position="none",
+        axis.text.x = migration_text) +
   scale_x_continuous(limits = c(18,29),breaks = c(18,20,22,24,26,28)) 
-netmig_linegraph_young
+
 
 ggsave("./plots/netmig_young.png", netmig_linegraph_young,width=8,height=6) 
 
@@ -331,7 +334,7 @@ netmig_regions <- netmigration_age %>%
             size=10, 
             color="black") +
   scale_y_continuous(labels=scales::comma) 
-netmig_regions
+
 
 ggsave("./plots/netmig_agegroup.png", netmig_regions,width=8,height=6) 
 
@@ -357,7 +360,8 @@ student_18 <- filter(student_migration, agegroup=="18 to 21") %>%
                              "Moved to Minnesota From Another State"), 
                     palette="Set1",
                     guide=guide_legend(title="Direction of Migration")) +
-  scale_y_continuous(labels=scales::percent) +
+  scale_y_continuous(labels=scales::percent,
+                     limits=c(0,1)) +
   geom_errorbar(aes(ymin=lower_error, ymax=upper_error), 
                 width = .2,
                 position=position_dodge(.9)) +
@@ -379,7 +383,8 @@ student_22 <- filter(student_migration, agegroup=="22 to 29") %>%
                              "Moved to Minnesota From Another State"), 
                     palette="Set1",
                     guide=guide_legend(title="Direction of Migration")) +
-  scale_y_continuous(labels=scales::percent) +
+  scale_y_continuous(labels=scales::percent,
+                     limits=c(0,1)) +
   geom_errorbar(aes(ymin=lower_error, ymax=upper_error), 
                 width = .2,
                 position=position_dodge(.9)) +
@@ -418,20 +423,18 @@ bp_22 <-
   geom_bar(stat="identity", position="stack") +
   geom_text(aes(label = ifelse(value>=.05, paste0(round(value*100,1),'%'), "")), 
             position=position_stack(vjust=0.5),
-            size =10) +
+            family="roboto", 
+            size=12) +
   scale_y_continuous(labels=scales::percent) +
   theme_migration +
   theme(panel.grid.major.y = element_blank(),
-        panel.grid.major.x = element_blank()) +
-  labs(title = "Place of Birth of 22-29 Year-olds who Moved to Minnesota from Another State, 2011-2015",
-       y="Percent of 18-22 Year-olds who Moved",
+        panel.grid.major.x = element_blank(),
+        axis.title.x = migration_text,
+        axis.title = element_text(size=32)) +
+  labs(title = "Birthplace of 22-29 Year-olds who Migrated to Minnesota from Another State, 2011-2015",
+       y="\nPercent of 18-22 Year-olds who Moved",
        x="",
-       caption = caption_noerrors)
-
-
-
-bp_22
-
+       caption = caption_noerrors) 
 
 ggsave("./plots/bp_22.png", bp_22,width=8,height=6) 
 
@@ -445,7 +448,7 @@ if (!exists("theme_migration")) {
   source("theme.R")
 }
 
-#Graph education levels for 24 to 29 year olds
+#Graph education levels for 22 to 29 year olds
 educ_22 <- filter(educ_migration, 
                   agegroup=="22 to 29" & variable !="Missing/NA")  %>%
   mutate(direction = ifelse(direction=="Inmigration", "Moved to Minnesota", "Moved from Minnesota")) %>% 
