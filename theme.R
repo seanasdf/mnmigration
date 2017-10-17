@@ -5,6 +5,7 @@
 library(ggplot2)
 library(showtext)
 library(dplyr)
+library(forcats)
 
 #add roboto font from google
 font.add.google("Roboto", "roboto")

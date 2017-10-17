@@ -68,4 +68,65 @@ bp_inmigration_long <- bp_inmigration %>%
 
 save(bp_inmigration_long, file="./caches/birthplace.rda")
 
+######################################
+######### Identify Birthplace ########
+##### of Foreign-Born In-migration####
+######################################
+library(tidyverse)
+library(srvyr)
 
+#read in inmigration data
+if (file.exists("./caches/inmigration.rda")) {
+  load("./caches/inmigration.rda")
+} else {
+  source("clean.R")
+}
+
+bpld_crosswalk <- read_csv("./crosswalk/bpld.csv") %>% 
+  filter(!is.na(BPLD)) %>% 
+  mutate(BPLD = as.factor(BPLD))
+
+bp_foreignborn_tot <- inmigration %>%
+  #create dummy variable to identify people who moved
+  mutate(moved_states = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<100, 1, 0),
+         birthplace = case_when(BPL == 27 ~ "Minnesota",
+                                BPL <150 & BPL != 27 ~ "Another State/Territory",
+                                BPL >= 150 & BPL <= 900 ~ "Another Country",
+                                BPL > 900 ~ "Other/Missing"),
+         birthplace = as.factor(birthplace),
+         BPLD = as.factor(BPLD),
+         moved_states = as.factor(moved_states)) %>% 
+  filter(birthplace == "Another Country" & moved_states==1) %>%
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
+  as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>% 
+  group_by(agegroup, BPLD) %>% 
+  summarise(number_who_moved = survey_total()) %>% 
+  filter(agegroup == "22 to 29", 
+         number_who_moved > 0) %>% 
+  left_join(bpld_crosswalk) %>% 
+  arrange(-number_who_moved)
+
+bp_foreignborn_pct <- inmigration %>%
+  #create dummy variable to identify people who moved
+  mutate(moved_states = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<100, 1, 0),
+         birthplace = case_when(BPL == 27 ~ "Minnesota",
+                                BPL <150 & BPL != 27 ~ "Another State/Territory",
+                                BPL >= 150 & BPL <= 900 ~ "Another Country",
+                                BPL > 900 ~ "Other/Missing"),
+         birthplace = as.factor(birthplace),
+         BPLD = as.factor(BPLD),
+         moved_states = as.factor(moved_states)) %>% 
+  filter(birthplace == "Another Country" & moved_states==1) %>%
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
+  as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>% 
+  group_by(agegroup, BPLD) %>% 
+  summarise(pct_of_movers = survey_mean()) %>% 
+  filter(agegroup == "22 to 29", 
+         pct_of_movers > 0) %>% 
+  left_join(bpld_crosswalk) %>% 
+  arrange(-pct_of_movers)
+
+
+save(bp_foreignborn_tot, bp_foreignborn_pct, file = "./caches/bp_foreignborn.rda")
