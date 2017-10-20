@@ -508,7 +508,8 @@ educ_22 <- filter(educ_migration,
         panel.grid.major.x = element_blank(),
         axis.ticks.x=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.text.y=element_blank()) +
+        axis.text.y=element_blank(),
+        axis.text.x=element_text(size=30)) +
   geom_bar(stat="identity",position="fill") +
   #coord_flip() +
   scale_fill_brewer(palette="Paired") +
@@ -519,9 +520,15 @@ educ_22 <- filter(educ_migration,
        y="Percent of 22 to 29 Year-olds who Moved",
        x="",
        caption = caption_noerrors) +
-  geom_text(aes(label = ifelse(value>=.05, paste0(round(value*100,1),'%'), "")), 
+  geom_text(aes(label = ifelse(value>=.06, paste0(round(value*100,1),'%'), "")), 
             position=position_stack(vjust=0.5),
             size =10) 
+
+
+educanalysis <- educ_migration %>% 
+  filter(agegroup == "22 to 29") %>% 
+  group_by(geogroup) %>% 
+  arrange(geogroup, direction)
 
 
 ggsave("./plots/educ_22.png", educ_22,width=8,height=6) 
