@@ -1,6 +1,6 @@
 
 ######################################
-##### Graph Percent Migration ########
+##### Graph Migration Rates  #########
 ######################################
 
 load("./caches/inout_byregion.rda")
@@ -17,9 +17,9 @@ netmig18_pct <- filter(pct_inout_byregion, agegroup=="18 to 21") %>%
   geom_bar(stat="identity", position="dodge") +
   scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                     palette="Set1")+
-  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 18 to 21",
+  labs(title = "Figure 5: Average Annual Migration between Minnesota and Other States, 2011-2015\nIndividuals Ages 18 to 21",
        caption = caption_witherrors,
-       y="Persons Moving per 1,000 Persons Ages 18 to 21") +
+       y="Individuals Moving per 1,000 Individuals Ages 18 to 21") +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
                 position=position_dodge(.9))
@@ -33,9 +33,9 @@ netmig22_pct <- filter(pct_inout_byregion, agegroup=="22 to 29") %>%
   theme_migration +
   scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                     palette="Set1")+
-  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 22 to 29",
+  labs(title = "Figure 6: Average Annual Migration between Minnesota and Other States, 2011-2015\nIndividuals Ages 22 to 29",
        caption = caption_witherrors,
-       y="Persons Moving per 1,000 Persons Ages 22 to 29") +
+       y="Individuals Moving per 1,000 Individuals Ages 22 to 29") +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
                 position=position_dodge(.9))
@@ -51,7 +51,7 @@ netmig18_tot <- filter(total_inout_byregion, agegroup=="18 to 21") %>%
   geom_bar(stat="identity", position="dodge") +
   scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                     palette="Set1")+
-  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 18 to 21",
+  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nIndividuals Ages 18 to 21",
        caption = caption_witherrors,
        y="Total Individuals Ages 18 to 21 Who Moved") +
   scale_y_continuous(labels=scales::comma) +
@@ -68,7 +68,7 @@ netmig22_tot <- filter(total_inout_byregion, agegroup=="22 to 29") %>%
   geom_bar(stat="identity", position="dodge") +
   scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                     palette="Set1")+
-  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nPersons Ages 22 to 29",
+  labs(title = "Average Annual Migration between Minnesota and Other States, 2011-2015\nIndividuals Ages 22 to 29",
        caption = caption_witherrors,
        y="Total Individuals Ages 22 to 29 Who Moved") +
   scale_y_continuous(labels=scales::comma) +
@@ -102,7 +102,7 @@ state_linegraph <- state_inout_byage %>%
   expand_limits(y=0) +
   scale_color_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                      palette="Set1") +
-  labs(title = "Average Annual Migration between Minnesota and Other States by Age, 2011-2015",
+  labs(title = "Figure 1: Average Annual Migration between Minnesota and Other States by Age, 2011-2015",
        caption = caption_noerrors,
        y="Individuals Migrating per 1,000 Indidivuals of Given Age",
        x="Age") +
@@ -124,7 +124,7 @@ state_linegraph_young <- state_inout_byage %>%
   expand_limits(y=0) +
   scale_color_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                      palette="Set1") +
-  labs(title = "Average Annual Migration between Minnesota and Other States by Age, 2011-2015",
+  labs(title = "Figure 2: Average Annual Migration between Minnesota and Other States, 2011-2015",
        caption = caption_noerrors,
        y="Individuals Migrating per 1,000 Indidivuals of Given Age",
        x="Age") +
@@ -154,7 +154,8 @@ if (!exists("theme_migration")) {
 #first, broken out by region
 linegraphs <- regional_inout %>% 
   mutate(AGE = as.numeric(AGE)) %>% 
-  filter(AGE > 17 & AGE < 30) %>% 
+  filter(AGE > 17 & AGE < 30) %>%
+  mutate(mig = mig*1000, se=se*1000) %>% 
   ggplot(aes(x=AGE, y=mig, group=direction, colour=direction)) +
   geom_point(shape=1) +
   geom_line() +
@@ -164,11 +165,11 @@ linegraphs <- regional_inout %>%
         strip.background=element_rect(color="white", fill="white")) +
   scale_color_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                      palette="Set1") +
-  labs(title = "Average Annual Migration between Minnesota and Other States by Age, 2011-2015",
+  labs(title = "Figure 4: Average Annual Migration between Minnesota and Other States by Age and Region, 2011-2015",
        caption =caption_noerrors,
-       y="Percent of Population in Age Group",
+       y="Individuals Migrating per 1,000 Indidivuals of Given Age",
        x="Age") +
-  scale_y_continuous(labels=scales::percent) +
+  scale_y_continuous(labels=scales::comma) +
   scale_x_continuous(limits = c(18,29),breaks = c(18,20,22,24,26,28))
 
 ggsave("./plots/linegraphs.png", linegraphs,width=8,height=6) 
@@ -226,7 +227,7 @@ netmig_linegraph_young <- netmig_mn %>%
   geom_errorbar(aes(ymin=netmig-1.645*se, ymax=netmig+1.645*se), 
                 width = 0) +
   theme_migration +
-  labs(title = "Average Annual Net Migration between Minnesota and Other States by Age, 2011-2015",
+  labs(title = "Figure 3: Average Annual Net Migration between Minnesota and Other States by Age, 2011-2015",
        caption = caption_witherrors,
        y="Net Migration of Individuals of Given Age",
        x="Age") +
@@ -298,8 +299,8 @@ netmig_regions <- netmigration_age %>%
   ggplot(aes(x=geogroup, y=netmig, fill=(geogroup=="Statewide\nTotal"))) +
   geom_bar(stat="identity") +
   facet_wrap(~agegroup, 
-             labeller = labeller(agegroup = c("18 to 21" = "18 to 21 Year Olds", 
-                                              "22 to 29" = "22 to 29 Year Olds"))) +
+             labeller = labeller(agegroup = c("18 to 21" = "18 to 21-year-olds", 
+                                              "22 to 29" = "22 to 29-year-olds"))) +
   geom_errorbar(aes(ymin=errorbot, ymax=errortop), 
                 width = .1) +
   theme_migration +
@@ -317,7 +318,7 @@ netmig_regions <- netmigration_age %>%
                                    face="plain", 
                                    color="black"),
         plot.caption= element_text(size=20))+
-  labs(title = "Total Net Migration Between Minnesota and Other States, 2011-2015",
+  labs(title = "Figure 7: Total Net Migration Between Minnesota and Other States, 2011-2015",
        y="",
        x="",
        caption = paste0("\n",caption_witherrors)) +
@@ -337,7 +338,6 @@ netmig_regions <- netmigration_age %>%
 
 
 ggsave("./plots/netmig_agegroup.png", netmig_regions,width=8,height=6) 
-
 
 ######################################
 ####### Graph Student Status #########
@@ -365,8 +365,8 @@ student_18 <- filter(student_migration, agegroup=="18 to 21") %>%
   geom_errorbar(aes(ymin=lower_error, ymax=upper_error), 
                 width = .2,
                 position=position_dodge(.9)) +
-  labs(title = "Share of 18-21 Year-olds Moving to and From Minnesota that Were Students",
-       y="Percent of 18-21 Year-olds who Moved that Were Students",
+  labs(title = "Figure 8: Share of 18 to 21-year-olds Moving to and From Minnesota that Were Students",
+       y="Percent of 18 to 21-year-olds who Moved that Were Students",
        x="",
        caption = caption_witherrors)
 
@@ -388,8 +388,8 @@ student_22 <- filter(student_migration, agegroup=="22 to 29") %>%
   geom_errorbar(aes(ymin=lower_error, ymax=upper_error), 
                 width = .2,
                 position=position_dodge(.9)) +
-  labs(title = "Share of 22-29 Year-olds Moving to and From Minnesota that Were Students",
-       y="Percent of 22-29 Year-olds who Moved that Were Students",
+  labs(title = "Figure 9: Share of 22 to 29-year-olds Moving to and From Minnesota that Were Students",
+       y="Percent of 22 to 29-year-olds who Moved that Were Students",
        x="",
        caption = caption_witherrors)
 
@@ -433,8 +433,8 @@ bp_22 <-
         panel.grid.major.x = element_blank(),
         axis.title.x = migration_text,
         axis.title = element_text(size=32)) +
-  labs(title = "Birthplace of 22-29 Year-olds who Migrated to Minnesota from Another State, 2011-2015",
-       y="\nPercent of 18-22 Year-olds who Moved",
+  labs(title = "Figure 10: Birthplace of 22 to 29-year-olds who\nMigrated to Minnesota from Another State, 2011-2015",
+       y="\nPercent of 18 to 22-year-olds who Moved",
        x="",
        caption = caption_noerrors) 
 
@@ -477,7 +477,7 @@ bp_foreignborn_graph <-
               family="roboto", 
               size=10, 
               color="black") +
-    labs(title = "Birthplace of Foreign-born 22 to 29 year-olds\n who Moved to Minnesota From Another State, 2011-2015",
+    labs(title = "Figure 11: Birthplace of Foreign-born 22 to 29-year-olds\n who Moved to Minnesota From Another State, 2011-2015",
        y="\nPercent of Foreign Born Individual who Moved",
        x="",
        caption = caption_witherrors) 
@@ -516,20 +516,13 @@ educ_22 <- filter(educ_migration,
   scale_y_continuous(labels=scales::percent,
                      trans = "reverse") +
   facet_wrap(~geogroup, ncol=2) +
-  labs(title = "Educational Attainment of 22-29 Year-olds who Migated between Minnesota and Another State",
-       y="Percent of 22 to 29 Year-olds who Moved",
+  labs(title = "Figure 12: Educational Attainment of 22 to 29-year-olds who Migated between Minnesota and Another State",
+       y="Percent of 22 to 29-year-olds who Moved",
        x="",
        caption = caption_noerrors) +
   geom_text(aes(label = ifelse(value>=.06, paste0(round(value*100,1),'%'), "")), 
             position=position_stack(vjust=0.5),
             size =10) 
-
-
-educanalysis <- educ_migration %>% 
-  filter(agegroup == "22 to 29") %>% 
-  group_by(geogroup) %>% 
-  arrange(geogroup, direction)
-
 
 ggsave("./plots/educ_22.png", educ_22,width=8,height=6) 
 
@@ -578,7 +571,7 @@ states_18_outmigration <- filter(top_states,
         strip.background=element_rect(color="white", fill="white"),
         strip.text.y = element_blank()) +
   labs(caption = caption_noerrors,
-       title="Top 10 States for Migration to and from Minnesota Regions, 2011-2015",
+       title="Figure 13: Top 10 States for Migration to and from Minnesota Regions, 2011-2015",
        subtitle="Share of 18-21 Year Olds Who Moved") +
   scale_fill_brewer(guide = guide_legend(reverse=TRUE),
                     palette = "Set1")
@@ -622,7 +615,7 @@ states_22_outmigration <- filter(top_states,
         strip.background=element_rect(color="white", fill="white"),
         strip.text.y = element_blank()) +
   labs(caption = caption_noerrors,
-       title="Top 10 States for Migration to and from Minnesota Regions, 2011-2015",
+       title="Figure 14: Top 10 States for Migration to and from Minnesota Regions, 2011-2015",
        subtitle="Share of 22 to 29 Year Olds Who Moved") +
   scale_fill_brewer(guide = guide_legend(reverse=TRUE),
                     palette = "Set1")

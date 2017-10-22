@@ -92,3 +92,42 @@ netmigration_age <- left_join(inmigration_age, outmigration_age) %>%
 
 save(netmigration_age, file="./caches/netmig_agegroup.rda")
 
+
+######################################
+######### Inmigration, Total #########
+######################################
+#read in inmigration data
+if (file.exists("./caches/inmigration.rda")) {
+  load("./caches/inmigration.rda")
+} else {
+  source("clean.R")
+}
+
+#get inmigration by geographic and age 
+inmigration_total <- inmigration %>%
+  #creat dummy variable to identify people who moved
+  mutate(moved_states = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<100, 1, 0),
+  AGE = as.factor(AGE)) %>%
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
+  as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>%
+  summarise(moved_in = survey_total(moved_states))
+
+
+######################################
+######### Outmigration, Total ########
+######################################
+if (file.exists("./caches/outmigration.rda")) {
+  load("./caches/outmigration.rda")
+} else {
+  source("clean.R")
+}
+
+
+outmigration_total <- outmigration %>%   
+  mutate(AGE = as.factor(AGE), one = 1) %>% 
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
+  as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT)  %>%
+  summarise(moved_out = survey_total(one)) 
+

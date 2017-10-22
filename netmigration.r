@@ -51,7 +51,9 @@ outmigration_by_age <- outmigration %>%
 netmig_mn <- left_join(inmigration_by_age, outmigration_by_age) %>%
   filter(AGE>0) %>% 
   mutate(netmig = moved_in-moved_out,
-         se = sqrt(moved_in_se^2 + moved_out_se^2)) %>% 
+         se = sqrt(moved_in_se^2 + moved_out_se^2), 
+         upper = netmig+1.645*se,
+         lower = netmig-1.645*se) %>% 
   select(AGE, netmig, se)
 
 save(netmig_mn,file= "./caches/netmig_mn.rda")
