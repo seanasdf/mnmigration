@@ -139,4 +139,27 @@ educ_migration <- left_join(educ_inmigration, educ_outmigration,
   )
 
 save(educ_migration, file="./caches/educresults.rda")
+  
+######################################
+######### Estimate Education #########
+####Levels of the 22 to 29 YO Pop ####
+######################################
+load("./caches/inmigration.rda")
+library(readxl)
+educ_groups <- read_excel("educ_cats.xlsx")
 
+# for people who moved, get educational attainment
+educ_inmigration <- inmigration %>%
+  left_join(educ_groups) %>%
+  mutate(moved_states = ifelse(!(MIGPLAC1 %in% c(0,27)) & MIGPLAC1<100, 1, 0)) %>% 
+  #rename replicate weights flag so it doesn't get used as a replicate weight
+  rename(repwtflag = REPWTP) %>% 
+  as_survey_rep(type="BRR", repweights=starts_with("REPWTP"), weights=PERWT) %>%
+  group_by(agegroup) %>% 
+  summarise(missing_edu = survey_mean(Group=="NA/Missing", proportion = TRUE, vartype = "ci", level=.9),
+            less_hs = survey_mean(Group=="Less than HS Diploma", proportion = TRUE, vartype = "ci", level=.9),
+            hs_ged = survey_mean(Group=="High School/GED", proportion = TRUE, vartype = "ci", level=.9), 
+            some_college = survey_mean(Group=="Some College, No Degree", proportion = TRUE, vartype = "ci", level=.9),
+            associate = survey_mean(Group=="Associate's Degree", proportion = TRUE, vartype = "ci", level=.9),
+            bachelors = survey_mean(Group=="Bachelor's Degree", proportion = TRUE, vartype = "ci", level=.9),
+            advanced = survey_mean(Group=="Advanced Degree", proportion = TRUE, vartype = "ci", level=.9)) 
