@@ -235,7 +235,8 @@ netmig_linegraph_young <- netmig_mn %>%
   guides(fill=FALSE) +
   theme(legend.position="none",
         axis.text.x = migration_text) +
-  scale_x_continuous(limits = c(18,29),breaks = c(18,20,22,24,26,28)) 
+  scale_x_continuous(limits = c(18,29),breaks = c(18,20,22,24,26,28)) +
+  geom_hline(yintercept = 0, size=.3)
 
 
 ggsave("./plots/netmig_young.png", netmig_linegraph_young,width=8,height=6) 
