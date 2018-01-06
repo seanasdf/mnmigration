@@ -22,7 +22,8 @@ netmig18_pct <- filter(pct_inout_byregion, agegroup=="18 to 21") %>%
        y="Individuals Moving per 1,000 Individuals Ages 18 to 21") +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
-                position=position_dodge(.9))
+                position=position_dodge(.9)) +
+  guides(fill = guide_legend(label.theme = margin(2, 2, 2, 2, "cm")))
 
 ggsave("./plots/netmig18_pct.png", netmig18_pct,width=8,height=6) 
 
