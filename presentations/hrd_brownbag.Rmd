@@ -1,27 +1,31 @@
 ---
-title: "Untitled"
+title: "Where are Minnesota's Young People Going?"
 author: "Sean Williams"
 date: "January 6, 2018"
 output:
-  ioslides_presentation: default
-  beamer_presentation: default
+  ioslides_presentation:
+      fig_width: 8
+      fig_height: 5
+      fig_caption: false
+      dev: png
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## R Markdown
+## Minnesota is Experiencing Net Negative Domestic Migration
+<div class="columns-2">
+  ![](demographer.png)
+  ![](minnpost.png)
+  
+</div>
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Minnesota was Experiencing Net Negative Domestic Migration?
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+<div align="center">![](pipress.png)</div>
 
-## Slide with Bullets
-
-- Bullet 1
-- Bullet 2
-- Bullet 3
+<div align="center">![](pipress2.png)</div>
 
 ## Migration Rates for 18 to 21 Year-olds
 
@@ -29,7 +33,7 @@ When you click the **Knit** button a document will be generated that includes bo
 load("../caches/inout_byregion.rda")
 
 if (!exists("theme_migration")) {
-  source("../theme_rmarkdown.R")
+  source("../presentations/theme_rmarkdown.R")
 }
 ```
 
@@ -41,21 +45,15 @@ netmig18_pct <- filter(pct_inout_byregion, agegroup=="18 to 21") %>%
   geom_bar(stat="identity", position="dodge") +
   scale_fill_brewer(labels=c("Left MN for Another State", "Moved to MN from Another State"), 
                     palette="Set1"
-                    # ,
-                    # guide = guide_legend(label.theme = element_text(
-                    #                                               size=10, 
-                    #                                               face="plain", 
-                    #                                               color="black",
-                    #                                               lineheight = 0.4,
-                    #                                               angle = 0)
-                    #                      )
                     ) +
   labs(title = "Figure 5: Average Annual Migration between Minnesota and Other States, 2011-2015\n\nIndividuals Ages 18 to 21",
        caption = caption_witherrors,
        y="Individuals Moving per 1,000 Individuals Ages 18 to 21") +
   geom_errorbar(aes(ymin=mig-1.645*se, ymax=mig+1.645*se), 
                 width = .2,
-                position=position_dodge(.9))
+                position=position_dodge(.9)) 
+
+
 netmig18_pct
 ```
 

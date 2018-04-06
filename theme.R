@@ -35,12 +35,13 @@ theme_migration <-  theme(
   panel.grid.major.x = element_blank()
 ) + 
   theme(plot.title = element_text(size=36, hjust = 0.5),
-        plot.caption = element_text(size=24))
+        plot.caption = element_text(size=28))
 
 
 #create default text for the captions
 caption_noerrors <- "Source: MN House Research/State Demographer.
        2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota."
 
-caption_witherrors <- "Source: MN House Research/State Demographer. Error bars represent 90% confidence intervals.
-       2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota."
+caption_witherrors <- 
+"Error bars represent 90% confidence intervals.
+Source: MN House Research/State Demographer. 2015 American Community Survey 5-year Estimates. IPUMS-USA, University of Minnesota."
