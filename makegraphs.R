@@ -319,7 +319,7 @@ netmig_regions <- netmigration_age %>%
                                    face="plain", 
                                    color="black"),
         plot.caption= element_text(size=20))+
-  labs(title = "Figure 7: Total Net Migration Between Minnesota and Other States, 2011-2015",
+  labs(title = "Figure 7: Total Annual Net Migration Between Minnesota and Other States, 2011-2015",
        y="",
        x="",
        caption = paste0("\n",caption_witherrors)) +
